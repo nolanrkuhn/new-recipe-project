@@ -56,7 +56,7 @@ const RecipeSearch = ({ user }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl">
                 {recipes.map((recipe) => (
                     <div key={recipe.id} className="bg-white p-5 rounded-xl shadow-md flex flex-col items-center transition transform hover:scale-105 hover:shadow-xl">
-                        <img src={recipe.image} alt={recipe.title} className="rounded-xl mb-3 w-full h-52 object-cover" />
+                        <img src={`https://spoonacular.com/recipeImages/${recipe.id}-312x231.jpg`} alt={recipe.title} className="rounded-xl mb-3 w-full h-52 object-cover" />
                         <h3 className="text-xl font-bold hover:text-blue-600 text-center">{recipe.title}</h3>
                     </div>
                 ))}
