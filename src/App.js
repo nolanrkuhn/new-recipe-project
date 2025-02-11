@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Link, Switch } from 'react-router-dom';
 import './index.css';
 import Login from './Login';
 import Register from './Register';
@@ -43,13 +43,13 @@ const App = () => {
                         </div>
                     )}
                 </nav>
-                <Routes>
-                    <Route path="/" element={<RecipeSearch user={user} />} />
-                    <Route path="/login" element={<Login setUser={setUser} />} />
-                    <Route path="/register" element={<Register setUser={setUser} />} />
-                    <Route path="/favorites" element={<Favorites />} />
-                    <Route path="/recipes/:id" element={<RecipeDetails />} />
-                </Routes>
+                <Switch>
+                    <Route exact path="/" component={() => <RecipeSearch user={user} />} />
+                    <Route path="/login" component={() => <Login setUser={setUser} />} />
+                    <Route path="/register" component={() => <Register setUser={setUser} />} />
+                    <Route path="/favorites" component={Favorites} />
+                    <Route path="/recipes/:id" component={RecipeDetails} />
+                </Switch>
             </div>
         </Router>
     );
