@@ -4,14 +4,52 @@ const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
+const { Sequelize, DataTypes } = require('sequelize');
 
 const app = express();
 const port = process.env.PORT || 5050;
 
 const SPOONACULAR_API_KEY = '28670279fa9c40e18481bf0311202bd2';
-const JWT_SECRET = '(Diamonds774!)'; // Replace with your own secret key for JWT
-const users = []; // Temporary in-memory user store
-const favorites = {}; // Temporary in-memory favorites store
+const JWT_SECRET = '(Diamonds774!))'; // Replace with your own secret key for JWT
+
+// Initialize Sequelize with SQLite
+const sequelize = new Sequelize({
+  dialect: 'sqlite',
+  storage: 'database.sqlite'
+});
+
+// Define User model
+const User = sequelize.define('User', {
+  username: {
+    type: DataTypes.STRING,
+    unique: true,
+    allowNull: false
+  },
+  password: {
+    type: DataTypes.STRING,
+    allowNull: false
+  }
+});
+
+// Define Favorite model
+const Favorite = sequelize.define('Favorite', {
+  userId: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  recipeId: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  title: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  image: {
+    type: DataTypes.STRING,
+    allowNull: false
+  }
+});
 
 // Middleware
 app.use(cors());
@@ -38,22 +76,24 @@ app.post('/register', async (req, res) => {
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
-  const user = { username, password: hashedPassword };
-  users.push(user);
-
-  const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '1h' });
-  res.json({ token, user: { username } });
+  try {
+    const user = await User.create({ username, password: hashedPassword });
+    const token = jwt.sign({ username: user.username }, JWT_SECRET, { expiresIn: '1h' });
+    res.json({ token, user: { username: user.username } });
+  } catch (error) {
+    res.status(400).json({ error: 'Username already exists' });
+  }
 });
 
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  const user = users.find(u => u.username === username);
+  const user = await User.findOne({ where: { username } });
   if (!user || !(await bcrypt.compare(password, user.password))) {
     return res.status(401).json({ error: 'Invalid username or password' });
   }
 
-  const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '1h' });
-  res.json({ token, user: { username } });
+  const token = jwt.sign({ username: user.username }, JWT_SECRET, { expiresIn: '1h' });
+  res.json({ token, user: { username: user.username } });
 });
 
 app.get('/recipes', async (req, res) => {
@@ -71,21 +111,22 @@ app.get('/recipes', async (req, res) => {
   }
 });
 
-app.post('/favorites', authenticateToken, (req, res) => {
+app.post('/favorites', authenticateToken, async (req, res) => {
   const { recipe } = req.body;
-  if (!favorites[req.user.username]) {
-    favorites[req.user.username] = [];
-  }
-  favorites[req.user.username].push(recipe);
+  const user = await User.findOne({ where: { username: req.user.username } });
+  await Favorite.create({ userId: user.id, recipeId: recipe.id, title: recipe.title, image: recipe.image });
   res.json({ message: 'Recipe added to favorites' });
 });
 
-app.get('/favorites', authenticateToken, (req, res) => {
-  const userFavorites = favorites[req.user.username] || [];
-  res.json({ favorites: userFavorites });
+app.get('/favorites', authenticateToken, async (req, res) => {
+  const user = await User.findOne({ where: { username: req.user.username } });
+  const favorites = await Favorite.findAll({ where: { userId: user.id } });
+  res.json({ favorites });
 });
 
-// Start the server
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+// Sync database and start the server
+sequelize.sync().then(() => {
+  app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
 });

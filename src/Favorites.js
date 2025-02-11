@@ -27,13 +27,13 @@ const Favorites = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl">
                 {favorites.map((recipe) => (
                     <a 
-                        key={recipe.id} 
-                        href={`https://spoonacular.com/recipes/${recipe.title.replace(/ /g, '-')}-${recipe.id}`} 
+                        key={recipe.recipeId} 
+                        href={`https://spoonacular.com/recipes/${recipe.title.replace(/ /g, '-')}-${recipe.recipeId}`} 
                         target="_blank" 
                         rel="noopener noreferrer" 
                         className="bg-white p-5 rounded-xl shadow-md flex flex-col items-center transition transform hover:scale-105 hover:shadow-xl"
                     >
-                        <img src={`https://spoonacular.com/recipeImages/${recipe.id}-312x231.jpg`} alt={recipe.title} className="rounded-xl mb-3 w-full h-52 object-cover" />
+                        <img src={`https://spoonacular.com/recipeImages/${recipe.recipeId}-312x231.jpg`} alt={recipe.title} className="rounded-xl mb-3 w-full h-52 object-cover" />
                         <h3 className="text-xl font-bold hover:text-blue-600 text-center">{recipe.title}</h3>
                     </a>
                 ))}
