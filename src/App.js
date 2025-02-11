@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import './index.css';
 import Login from './Login';
 import Register from './Register';
 import RecipeSearch from './RecipeSearch';
 import Favorites from './Favorites';
+import RecipeDetails from './RecipeDetails';
 
 const App = () => {
     const [user, setUser] = useState(null);
@@ -47,6 +48,7 @@ const App = () => {
                     <Route path="/login" element={<Login setUser={setUser} />} />
                     <Route path="/register" element={<Register setUser={setUser} />} />
                     <Route path="/favorites" element={<Favorites />} />
+                    <Route path="/recipes/:id" element={<RecipeDetails />} />
                 </Routes>
             </div>
         </Router>

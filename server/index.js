@@ -11,7 +11,7 @@ const app = express();
 const port = process.env.PORT || 5050;
 
 const SPOONACULAR_API_KEY = '28670279fa9c40e18481bf0311202bd2';
-const JWT_SECRET = '(Diamonds774!)'; // Replace with your own secret key for JWT
+const JWT_SECRET = 'your_jwt_secret'; // Replace with your own secret key for JWT
 
 // Initialize Sequelize with SQLite
 const sequelize = new Sequelize({
@@ -52,6 +52,42 @@ const Favorite = sequelize.define('Favorite', {
   }
 });
 
+// Define Comment model
+const Comment = sequelize.define('Comment', {
+  userId: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  recipeId: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  text: {
+    type: DataTypes.STRING,
+    allowNull: false
+  }
+});
+
+// Define Rating model
+const Rating = sequelize.define('Rating', {
+  userId: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  recipeId: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  rating: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    validate: {
+      min: 1,
+      max: 5
+    }
+  }
+});
+
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
@@ -78,6 +114,12 @@ const validatePassword = (password) => {
     minNumbers: 1,
     minSymbols: 1
   });
+};
+
+// Error handling middleware
+const errorHandler = (err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Something went wrong. Please try again later.' });
 };
 
 // Routes
@@ -112,33 +154,91 @@ app.post('/login', async (req, res) => {
   res.json({ token, user: { username: user.username } });
 });
 
-app.get('/recipes', async (req, res) => {
-  const query = req.query.query;
+app.get('/recipes', async (req, res, next) => {
+  const { query, offset, number, diet, cuisine } = req.query;
   try {
     const response = await axios.get('https://api.spoonacular.com/recipes/complexSearch', {
       params: {
         query: query,
+        offset: offset,
+        number: number,
+        diet: diet,
+        cuisine: cuisine,
         apiKey: SPOONACULAR_API_KEY
       }
     });
-    res.json({ results: response.data.results });
+    res.json({ results: response.data.results, totalResults: response.data.totalResults });
   } catch (error) {
-    res.status(500).json({ error: 'Error fetching recipes from Spoonacular API' });
+    next(new Error('Error fetching recipes from Spoonacular API'));
   }
 });
 
-app.post('/favorites', authenticateToken, async (req, res) => {
+app.post('/favorites', authenticateToken, async (req, res, next) => {
   const { recipe } = req.body;
-  const user = await User.findOne({ where: { username: req.user.username } });
-  await Favorite.create({ userId: user.id, recipeId: recipe.id, title: recipe.title, image: recipe.image });
-  res.json({ message: 'Recipe added to favorites' });
+  try {
+    const user = await User.findOne({ where: { username: req.user.username } });
+    await Favorite.create({ userId: user.id, recipeId: recipe.id, title: recipe.title, image: recipe.image });
+    res.json({ message: 'Recipe added to favorites' });
+  } catch (error) {
+    next(new Error('Error adding recipe to favorites'));
+  }
 });
 
-app.get('/favorites', authenticateToken, async (req, res) => {
-  const user = await User.findOne({ where: { username: req.user.username } });
-  const favorites = await Favorite.findAll({ where: { userId: user.id } });
-  res.json({ favorites });
+app.get('/favorites', authenticateToken, async (req, res, next) => {
+  try {
+    const user = await User.findOne({ where: { username: req.user.username } });
+    const favorites = await Favorite.findAll({ where: { userId: user.id } });
+    res.json({ favorites });
+  } catch (error) {
+    next(new Error('Error fetching favorites'));
+  }
 });
+
+app.post('/comments', authenticateToken, async (req, res, next) => {
+  const { recipeId, text } = req.body;
+  try {
+    const user = await User.findOne({ where: { username: req.user.username } });
+    await Comment.create({ userId: user.id, recipeId, text });
+    res.json({ message: 'Comment added' });
+  } catch (error) {
+    next(new Error('Error adding comment'));
+  }
+});
+
+app.get('/comments/:recipeId', async (req, res, next) => {
+  const { recipeId } = req.params;
+  try {
+    const comments = await Comment.findAll({ where: { recipeId } });
+    res.json({ comments });
+  } catch (error) {
+    next(new Error('Error fetching comments'));
+  }
+});
+
+app.post('/ratings', authenticateToken, async (req, res, next) => {
+  const { recipeId, rating } = req.body;
+  try {
+    const user = await User.findOne({ where: { username: req.user.username } });
+    await Rating.create({ userId: user.id, recipeId, rating });
+    res.json({ message: 'Rating added' });
+  } catch (error) {
+    next(new Error('Error adding rating'));
+  }
+});
+
+app.get('/ratings/:recipeId', async (req, res, next) => {
+  const { recipeId } = req.params;
+  try {
+    const ratings = await Rating.findAll({ where: { recipeId } });
+    const averageRating = ratings.reduce((sum, rating) => sum + rating.rating, 0) / ratings.length;
+    res.json({ ratings, averageRating });
+  } catch (error) {
+    next(new Error('Error fetching ratings'));
+  }
+});
+
+// Use error handling middleware
+app.use(errorHandler);
 
 // Sync database and start the server
 sequelize.sync().then(() => {
