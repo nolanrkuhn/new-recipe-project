@@ -28,23 +28,23 @@ const App = () => {
     return (
         <Router>
             <div className="app-container">
-                <nav className="nav">
-                    <div className="nav-content">
-                        <Link to="/" className="nav-brand">Recipe Finder</Link>
-                        {user ? (
-                            <div className="nav-links">
-                                <Link to="/favorites" className="nav-link">Favorites</Link>
-                                <span className="user-welcome">Welcome, {user.username}</span>
-                                <button onClick={handleLogout} className="btn btn-danger">Logout</button>
-                            </div>
-                        ) : (
-                            <div className="nav-links">
-                                <Link to="/login" className="nav-link">Login</Link>
-                                <Link to="/register" className="nav-link">Register</Link>
-                            </div>
-                        )}
-                    </div>
-                </nav>
+            <nav className="nav">
+                <div className="nav-content">
+                    <Link to="/" className="nav-brand">Recipe Finder</Link>
+                    {user ? (
+                        <div className="nav-links">
+                            <Link to="/favorites" className="nav-link">Favorites</Link>
+                            <span className="nav-link user-welcome">Welcome, {user.username}</span>
+                            <button onClick={handleLogout} className="btn btn-danger">Logout</button>
+                        </div>
+                    ) : (
+                        <div className="nav-links">
+                            <Link to="/login" className="nav-link">Login</Link>
+                            <Link to="/register" className="nav-link">Register</Link>
+                        </div>
+                    )}
+                </div>
+            </nav>
                 <div className="container">
                     <Routes>
                         <Route path="/" element={<RecipeSearch user={user} />} />

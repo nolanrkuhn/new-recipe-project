@@ -72,6 +72,22 @@ body {
   align-items: center;
 }
 
+.nav-link {
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.nav-link:hover {
+  color: var(--primary);
+}
+
+.user-welcome {
+  color: var(--text);
+  font-weight: 500;
+}
+
 /* Buttons */
 .btn {
   padding: 0.5rem 1rem;
