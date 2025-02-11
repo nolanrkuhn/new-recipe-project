@@ -1,3 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles */
 body {
   font-family: Arial, sans-serif;
   margin: 0;
@@ -16,229 +21,195 @@ button {
   font-family: inherit;
 }
 
+/* Tailwind CSS classes */
 .min-h-screen {
-  min-height: 100vh;
+  @apply min-h-screen;
 }
 
 .flex {
-  display: flex;
+  @apply flex;
 }
 
 .flex-col {
-  flex-direction: column;
+  @apply flex-col;
 }
 
 .items-center {
-  align-items: center;
+  @apply items-center;
 }
 
 .bg-gray-50 {
-  background-color: #f9fafb;
+  @apply bg-gray-50;
 }
 
 .p-6 {
-  padding: 1.5rem;
+  @apply p-6;
 }
 
 .mb-6 {
-  margin-bottom: 1.5rem;
+  @apply mb-6;
 }
 
 .space-x-3 {
-  > :not([hidden]) ~ :not([hidden]) {
-    --space-x-reverse: 0;
-    margin-right: calc(0.75rem * var(--space-x-reverse));
-    margin-left: calc(0.75rem * calc(1 - var(--space-x-reverse)));
-  }
+  @apply space-x-3;
 }
 
 .space-x-4 {
-  > :not([hidden]) ~ :not([hidden]) {
-    --space-x-reverse: 0;
-    margin-right: calc(1rem * var(--space-x-reverse));
-    margin-left: calc(1rem * calc(1 - var(--space-x-reverse)));
-  }
+  @apply space-x-4;
 }
 
 .text-lg {
-  font-size: 1.125rem;
+  @apply text-lg;
 }
 
 .text-blue-600 {
-  color: #2563eb;
+  @apply text-blue-600;
 }
 
 .hover\:underline:hover {
-  text-decoration: underline;
+  @apply underline;
 }
 
 .text-5xl {
-  font-size: 3rem;
+  @apply text-5xl;
 }
 
 .font-extrabold {
-  font-weight: 800;
+  @apply font-extrabold;
 }
 
 .text-gray-800 {
-  color: #1f2937;
+  @apply text-gray-800;
 }
 
 .px-4 {
-  padding-left: 1rem;
-  padding-right: 1rem;
+  @apply px-4;
 }
 
 .py-3 {
-  padding-top: 0.75rem;
-  padding-bottom: 0.75rem;
+  @apply py-3;
 }
 
 .border {
-  border-width: 1px;
+  @apply border;
 }
 
 .rounded-lg {
-  border-radius: 0.5rem;
+  @apply rounded-lg;
 }
 
 .shadow-sm {
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  @apply shadow-sm;
 }
 
 .focus\:outline-none:focus {
-  outline: 0;
+  @apply outline-none;
 }
 
 .focus\:ring-2:focus {
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+  @apply ring-2;
 }
 
 .focus\:ring-blue-500:focus {
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+  @apply ring-blue-500;
 }
 
 .w-full {
-  width: 100%;
+  @apply w-full;
 }
 
 .bg-blue-600 {
-  background-color: #2563eb;
+  @apply bg-blue-600;
 }
 
 .text-white {
-  color: #ffffff;
+  @apply text-white;
 }
 
 .hover\:bg-blue-700:hover {
-  background-color: #1d4ed8;
-}
-
-.text-lg {
-  font-size: 1.125rem;
-}
-
-.rounded-lg {
-  border-radius: 0.5rem;
-}
-
-.shadow-md {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  @apply bg-blue-700;
 }
 
 .grid {
-  display: grid;
+  @apply grid;
 }
 
 .grid-cols-1 {
-  grid-template-columns: repeat(1, minmax(0, 1fr));
+  @apply grid-cols-1;
 }
 
 .md\:grid-cols-2 {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  @apply md:grid-cols-2;
 }
 
 .lg\:grid-cols-3 {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  @apply lg:grid-cols-3;
 }
 
 .gap-6 {
-  gap: 1.5rem;
+  @apply gap-6;
 }
 
 .max-w-5xl {
-  max-width: 64rem;
+  @apply max-w-5xl;
 }
 
 .bg-white {
-  background-color: #ffffff;
+  @apply bg-white;
 }
 
 .p-5 {
-  padding: 1.25rem;
+  @apply p-5;
 }
 
 .rounded-xl {
-  border-radius: 0.75rem;
+  @apply rounded-xl;
 }
 
 .shadow-md {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  @apply shadow-md;
 }
 
 .transition {
-  transition-property: all;
-  transition-duration: 150ms;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  @apply transition;
 }
 
 .transform {
-  transform: scale(1);
+  @apply transform;
 }
 
 .hover\:scale-105:hover {
-  transform: scale(1.05);
+  @apply scale-105;
 }
 
 .hover\:shadow-xl:hover {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-.rounded-xl {
-  border-radius: 0.75rem;
+  @apply shadow-xl;
 }
 
 .mb-3 {
-  margin-bottom: 0.75rem;
-}
-
-.w-full {
-  width: 100%;
+  @apply mb-3;
 }
 
 .h-52 {
-  height: 13rem;
+  @apply h-52;
 }
 
 .object-cover {
-  object-fit: cover;
+  @apply object-cover;
 }
 
 .text-xl {
-  font-size: 1.25rem;
+  @apply text-xl;
 }
 
 .font-bold {
-  font-weight: 700;
+  @apply font-bold;
 }
 
 .hover\:text-blue-600:hover {
-  color: #2563eb;
+  @apply text-blue-600;
 }
 
 .text-center {
-  text-align: center;
+  @apply text-center;
 }

@@ -28,18 +28,18 @@ const App = () => {
     return (
         <Router>
             <div className="min-h-screen flex flex-col items-center bg-gray-50 p-6">
-                <nav className="w-full max-w-lg flex justify-between mb-6">
-                    <Link to="/" className="text-lg text-blue-600 hover:underline">Home</Link>
+                <nav className="w-full max-w-4xl bg-white shadow-md rounded-lg p-4 mb-6 flex justify-between items-center">
+                    <Link to="/" className="text-xl font-semibold text-blue-600 hover:text-blue-800">New Recipe Project</Link>
                     {user ? (
-                        <>
-                            <Link to="/favorites" className="text-lg text-blue-600 hover:underline">Favorites</Link>
-                            <span className="text-lg">Welcome, {user.username}</span>
-                            <button onClick={handleLogout} className="text-lg text-red-600 hover:underline">Logout</button>
-                        </>
+                        <div className="flex items-center space-x-4">
+                            <Link to="/favorites" className="text-lg text-gray-700 hover:text-blue-600">Favorites</Link>
+                            <span className="text-lg text-gray-700">Welcome, {user.username}</span>
+                            <button onClick={handleLogout} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700">Logout</button>
+                        </div>
                     ) : (
                         <div className="flex space-x-4">
-                            <Link to="/login" className="text-lg text-blue-600 hover:underline">Login</Link>
-                            <Link to="/register" className="text-lg text-blue-600 hover:underline">Register</Link>
+                            <Link to="/login" className="text-lg text-gray-700 hover:text-blue-600">Login</Link>
+                            <Link to="/register" className="text-lg text-gray-700 hover:text-blue-600">Register</Link>
                         </div>
                     )}
                 </nav>
