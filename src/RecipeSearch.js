@@ -13,7 +13,40 @@ const RecipeSearch = ({ user }) => {
     const [cuisine, setCuisine] = useState('');
     const pageSize = 10;
 
-    // ... keep existing searchRecipes and addToFavorites functions ...
+    const searchRecipes = async () => {
+        if (!query) {
+            setError('Please enter a search term.');
+            return;
+        }
+        try {
+            setLoading(true);
+            setError(null);
+            const response = await axios.get('http://localhost:5050/recipes', {
+                params: { query, offset: page * pageSize, number: pageSize, diet, cuisine }
+            });
+            setRecipes(response.data.results || []);
+            setTotalResults(response.data.totalResults);
+            if (response.data.results.length === 0) {
+                setError('No recipes found. Try a different search term.');
+            }
+        } catch (error) {
+            setError('Error fetching recipes. Please try again.');
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const addToFavorites = async (recipe) => {
+        try {
+            await axios.post('http://localhost:5050/favorites', { recipe }, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+            alert('Recipe added to favorites');
+        } catch (error) {
+            setError('Error adding recipe to favorites');
+        }
+    };
 
     return (
         <div className="container">
