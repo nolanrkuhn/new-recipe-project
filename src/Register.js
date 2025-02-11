@@ -16,7 +16,7 @@ const Register = ({ setUser }) => {
             setUser(response.data.user);
             navigate('/'); // Redirect to the homepage
         } catch (error) {
-            setError('Error registering');
+            setError(error.response.data.error || 'Error registering');
         }
     };
 

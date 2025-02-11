@@ -5,12 +5,13 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
 const { Sequelize, DataTypes } = require('sequelize');
+const validator = require('validator');
 
 const app = express();
 const port = process.env.PORT || 5050;
 
 const SPOONACULAR_API_KEY = '28670279fa9c40e18481bf0311202bd2';
-const JWT_SECRET = '(Diamonds774!))'; // Replace with your own secret key for JWT
+const JWT_SECRET = '(Diamonds774!)'; // Replace with your own secret key for JWT
 
 // Initialize Sequelize with SQLite
 const sequelize = new Sequelize({
@@ -68,11 +69,26 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
+// Password validation function
+const validatePassword = (password) => {
+  return validator.isStrongPassword(password, {
+    minLength: 8,
+    minLowercase: 1,
+    minUppercase: 1,
+    minNumbers: 1,
+    minSymbols: 1
+  });
+};
+
 // Routes
 app.post('/register', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
     return res.status(400).json({ error: 'Username and password are required' });
+  }
+
+  if (!validatePassword(password)) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters long and include at least one lowercase letter, one uppercase letter, one number, and one symbol.' });
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
