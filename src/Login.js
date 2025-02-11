@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Login = ({ setUser }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
     const handleLogin = async (event) => {
         event.preventDefault();
@@ -12,6 +14,7 @@ const Login = ({ setUser }) => {
             const response = await axios.post('http://localhost:5050/login', { username, password });
             localStorage.setItem('token', response.data.token);
             setUser(response.data.user);
+            navigate('/'); // Redirect to the homepage
         } catch (error) {
             setError('Invalid username or password');
         }
