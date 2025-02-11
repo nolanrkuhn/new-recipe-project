@@ -13,113 +13,103 @@ const RecipeSearch = ({ user }) => {
     const [cuisine, setCuisine] = useState('');
     const pageSize = 10;
 
-    const searchRecipes = async () => {
-        if (!query) {
-            setError('Please enter a search term.');
-            return;
-        }
-        try {
-            setLoading(true);
-            setError(null);
-            const response = await axios.get('http://localhost:5050/recipes', {
-                params: { query, offset: page * pageSize, number: pageSize, diet, cuisine }
-            });
-            setRecipes(response.data.results || []);
-            setTotalResults(response.data.totalResults);
-            if (response.data.results.length === 0) {
-                setError('No recipes found. Try a different search term.');
-            }
-        } catch (error) {
-            setError('Error fetching recipes. Please try again.');
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const addToFavorites = async (recipe) => {
-        try {
-            await axios.post('http://localhost:5050/favorites', { recipe }, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
-            alert('Recipe added to favorites');
-        } catch (error) {
-            setError('Error adding recipe to favorites');
-        }
-    };
+    // ... keep existing searchRecipes and addToFavorites functions ...
 
     return (
-        <div className="min-h-screen flex flex-col items-center bg-gray-50 p-6">
-            <h1 className="text-5xl font-extrabold text-gray-800 mb-6">🍽️ Recipe Finder</h1>
-            <div className="flex space-x-3 mb-6 w-full max-w-lg">
-                <input 
-                    type="text" 
-                    value={query} 
-                    onChange={(e) => setQuery(e.target.value)} 
-                    placeholder="Search for a recipe..." 
-                    className="px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
-                />
-                <button 
-                    onClick={searchRecipes} 
-                    className="px-6 py-3 bg-blue-600 text-white text-lg rounded-lg shadow-md hover:bg-blue-700">
-                    🔍 Search
-                </button>
+        <div className="container">
+            <h1 className="text-center mb-4">🍽️ Recipe Finder</h1>
+            
+            <div className="card mb-4">
+                <div className="form-group">
+                    <input 
+                        type="text" 
+                        value={query} 
+                        onChange={(e) => setQuery(e.target.value)} 
+                        placeholder="Search for a recipe..." 
+                        className="form-control mb-2"
+                    />
+                    <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <select 
+                            value={diet} 
+                            onChange={(e) => setDiet(e.target.value)} 
+                            className="form-control"
+                        >
+                            <option value="">Any Diet</option>
+                            <option value="vegetarian">Vegetarian</option>
+                            <option value="vegan">Vegan</option>
+                            <option value="gluten free">Gluten Free</option>
+                        </select>
+                        <select 
+                            value={cuisine} 
+                            onChange={(e) => setCuisine(e.target.value)} 
+                            className="form-control"
+                        >
+                            <option value="">Any Cuisine</option>
+                            <option value="italian">Italian</option>
+                            <option value="mexican">Mexican</option>
+                            <option value="indian">Indian</option>
+                        </select>
+                    </div>
+                    <button 
+                        onClick={searchRecipes} 
+                        className="btn btn-primary mt-2"
+                        style={{ width: '100%' }}
+                    >
+                        🔍 Search
+                    </button>
+                </div>
             </div>
-            <div className="flex space-x-3 mb-6 w-full max-w-lg">
-                <select 
-                    value={diet} 
-                    onChange={(e) => setDiet(e.target.value)} 
-                    className="px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
-                >
-                    <option value="">Any Diet</option>
-                    <option value="vegetarian">Vegetarian</option>
-                    <option value="vegan">Vegan</option>
-                    <option value="gluten free">Gluten Free</option>
-                </select>
-                <select 
-                    value={cuisine} 
-                    onChange={(e) => setCuisine(e.target.value)} 
-                    className="px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
-                >
-                    <option value="">Any Cuisine</option>
-                    <option value="italian">Italian</option>
-                    <option value="mexican">Mexican</option>
-                    <option value="indian">Indian</option>
-                </select>
-            </div>
-            {loading && <p className="text-blue-500 text-lg">Loading recipes...</p>}
-            {error && <p className="text-red-500 text-lg">{error}</p>}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl">
+
+            {loading && <p className="text-center">Loading recipes...</p>}
+            {error && <p className="text-center text-danger">{error}</p>}
+            
+            <div className="recipe-grid">
                 {recipes.map((recipe) => (
-                    <div key={recipe.id} className="bg-white p-5 rounded-xl shadow-md flex flex-col items-center transition transform hover:scale-105 hover:shadow-xl">
-                        <Link to={`/recipes/${recipe.id}`} className="no-underline hover:underline">
-                            <img src={`https://spoonacular.com/recipeImages/${recipe.id}-312x231.jpg`} alt={recipe.title} className="rounded-xl mb-3 w-full h-52 object-cover" />
-                            <h3 className="text-xl font-bold hover:text-blue-600 text-center">{recipe.title}</h3>
+                    <div key={recipe.id} className="recipe-card">
+                        <Link to={`/recipes/${recipe.id}`} className="recipe-link">
+                            <img 
+                                src={`https://spoonacular.com/recipeImages/${recipe.id}-312x231.jpg`} 
+                                alt={recipe.title} 
+                                className="recipe-image" 
+                            />
+                            <div className="recipe-content">
+                                <h3 className="recipe-title">{recipe.title}</h3>
+                                {user && (
+                                    <button 
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            addToFavorites(recipe);
+                                        }} 
+                                        className="btn btn-secondary mt-2"
+                                    >
+                                        Add to Favorites
+                                    </button>
+                                )}
+                            </div>
                         </Link>
-                        {user && (
-                            <button 
-                                onClick={() => addToFavorites(recipe)} 
-                                className="mt-3 px-4 py-2 bg-green-600 text-white text-sm rounded-lg shadow-md hover:bg-green-700">
-                                Add to Favorites
-                            </button>
-                        )}
                     </div>
                 ))}
             </div>
-            <div className="flex justify-between mt-6 w-full max-w-lg">
-                <button 
-                    onClick={() => setPage(page - 1)} 
-                    disabled={page === 0} 
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg shadow-md hover:bg-gray-400 disabled:opacity-50">
-                    Previous
-                </button>
-                <button 
-                    onClick={() => setPage(page + 1)} 
-                    disabled={(page + 1) * pageSize >= totalResults} 
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg shadow-md hover:bg-gray-400 disabled:opacity-50">
-                    Next
-                </button>
-            </div>
+
+            {recipes.length > 0 && (
+                <div className="pagination mt-4 mb-4">
+                    <button 
+                        onClick={() => setPage(page - 1)} 
+                        disabled={page === 0} 
+                        className="btn btn-primary"
+                    >
+                        Previous
+                    </button>
+                    <button 
+                        onClick={() => setPage(page + 1)} 
+                        disabled={(page + 1) * pageSize >= totalResults} 
+                        className="btn btn-primary"
+                        style={{ marginLeft: '1rem' }}
+                    >
+                        Next
+                    </button>
+                </div>
+            )}
         </div>
     );
 };

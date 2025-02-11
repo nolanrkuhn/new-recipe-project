@@ -27,29 +27,33 @@ const App = () => {
 
     return (
         <Router>
-            <div className="min-h-screen flex flex-col items-center bg-gray-50 p-6">
-                <nav className="w-full max-w-4xl bg-white shadow-md rounded-lg p-4 mb-6 flex justify-between items-center">
-                    <Link to="/" className="text-xl font-semibold text-blue-600 hover:text-blue-800">New Recipe Project</Link>
-                    {user ? (
-                        <div className="flex items-center space-x-4">
-                            <Link to="/favorites" className="text-lg text-gray-700 hover:text-blue-600">Favorites</Link>
-                            <span className="text-lg text-gray-700">Welcome, {user.username}</span>
-                            <button onClick={handleLogout} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700">Logout</button>
-                        </div>
-                    ) : (
-                        <div className="flex space-x-4">
-                            <Link to="/login" className="text-lg text-gray-700 hover:text-blue-600">Login</Link>
-                            <Link to="/register" className="text-lg text-gray-700 hover:text-blue-600">Register</Link>
-                        </div>
-                    )}
+            <div className="app-container">
+                <nav className="nav">
+                    <div className="nav-content">
+                        <Link to="/" className="nav-brand">Recipe Finder</Link>
+                        {user ? (
+                            <div className="nav-links">
+                                <Link to="/favorites" className="nav-link">Favorites</Link>
+                                <span className="user-welcome">Welcome, {user.username}</span>
+                                <button onClick={handleLogout} className="btn btn-danger">Logout</button>
+                            </div>
+                        ) : (
+                            <div className="nav-links">
+                                <Link to="/login" className="nav-link">Login</Link>
+                                <Link to="/register" className="nav-link">Register</Link>
+                            </div>
+                        )}
+                    </div>
                 </nav>
-                <Routes>
-                    <Route path="/" element={<RecipeSearch user={user} />} />
-                    <Route path="/login" element={<Login setUser={setUser} />} />
-                    <Route path="/register" element={<Register setUser={setUser} />} />
-                    <Route path="/favorites" element={<Favorites />} />
-                    <Route path="/recipes/:id" element={<RecipeDetails />} />
-                </Routes>
+                <div className="container">
+                    <Routes>
+                        <Route path="/" element={<RecipeSearch user={user} />} />
+                        <Route path="/login" element={<Login setUser={setUser} />} />
+                        <Route path="/register" element={<Register setUser={setUser} />} />
+                        <Route path="/favorites" element={<Favorites />} />
+                        <Route path="/recipes/:id" element={<RecipeDetails />} />
+                    </Routes>
+                </div>
             </div>
         </Router>
     );
