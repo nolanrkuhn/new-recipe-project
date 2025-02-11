@@ -1,17 +1,25 @@
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-// Mock axios
-jest.mock('axios', () => ({
-  get: jest.fn(() => Promise.resolve({ data: {} })),
-  post: jest.fn(() => Promise.resolve({ data: {} }))
-}));
+beforeAll(() => {
+  jest.spyOn(console, 'warn').mockImplementation(() => {});
+});
+
+afterAll(() => {
+  jest.restoreAllMocks();
+});
 
 describe('App Component', () => {
-  test('renders Recipe Finder link', () => {
+  test('renders Recipe Finder navigation brand', () => {
     render(<App />);
-    const linkElement = screen.getByText(/Recipe Finder/i);
-    expect(linkElement).toBeInTheDocument();
+    const navBrand = screen.getByText(/Recipe Finder/i, { selector: 'a.nav-brand' });
+    expect(navBrand).toBeInTheDocument();
+  });
+
+  test('renders Recipe Finder heading', () => {
+    render(<App />);
+    const heading = screen.getByText(/🍽️ Recipe Finder/i, { selector: 'h1' });
+    expect(heading).toBeInTheDocument();
   });
 
   test('renders login and register links when user is not logged in', () => {
