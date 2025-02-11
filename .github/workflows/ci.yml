@@ -16,5 +16,9 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: "18.x"
-      - run: npm ci
-      - run: npm test
+      - name: Install dependencies
+        run: |
+          rm -f package-lock.json
+          npm install
+      - name: Run tests
+        run: npm test
