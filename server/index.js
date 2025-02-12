@@ -237,6 +237,10 @@ app.get('/ratings/:recipeId', async (req, res, next) => {
   }
 });
 
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 // Use error handling middleware
 app.use(errorHandler);
 
