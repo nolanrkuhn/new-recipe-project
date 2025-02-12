@@ -17,6 +17,13 @@ const generateToken = (user) => {
     return jwt.sign({ id: user.id, email: user.email, name: user.name }, process.env.JWT_SECRET, { expiresIn: '1h' });
 };
 
+app.get('/health', (req, res) => {
+    res.json({ 
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV
+    });
+});
 // User Registration (optional)
 app.post('/register', async (req, res) => {
     const { email, password, name } = req.body;
@@ -54,18 +61,40 @@ app.get('/me', (req, res) => {
 });
 
 // Recipe Search Endpoint
-app.get('/recipes', async (req, res) => {
+app.get('/api/recipes', async (req, res) => {
     try {
-        const { query } = req.query;
+        const { query, offset, number, diet, cuisine } = req.query;
         const response = await axios.get(`https://api.spoonacular.com/recipes/complexSearch`, {
-            params: { query, apiKey: process.env.SPOONACULAR_API_KEY }
+            params: {
+                query,
+                offset,
+                number,
+                diet,
+                cuisine,
+                apiKey: process.env.SPOONACULAR_API_KEY
+            }
         });
         res.json(response.data);
     } catch (error) {
-        res.status(500).json({ error: 'Error fetching recipes' });
+        console.error('Spoonacular API Error:', error.response?.data || error.message);
+        res.status(500).json({ 
+            error: 'Error fetching recipes',
+            details: error.response?.data || error.message 
+        });
     }
 });
 
+app.use((req, res, next) => {
+    res.status(404).json({ error: `Cannot ${req.method} ${req.path}` });
+});
+
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ 
+        error: 'Internal Server Error',
+        message: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+});
 // Start Server
 const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
