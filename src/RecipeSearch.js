@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import config from '../config';
 
 const RecipeSearch = ({ user }) => {
     const [query, setQuery] = useState('');
@@ -21,7 +22,7 @@ const RecipeSearch = ({ user }) => {
         try {
             setLoading(true);
             setError(null);
-            const response = await axios.get('http://localhost:5050/recipes', {
+            const response = await axios.get(`${config.API_URL}${config.ENDPOINTS.RECIPES}`, {
                 params: { query, offset: page * pageSize, number: pageSize, diet, cuisine }
             });
             setRecipes(response.data.results || []);
@@ -39,7 +40,7 @@ const RecipeSearch = ({ user }) => {
 
     const addToFavorites = async (recipe) => {
         try {
-            await axios.post('http://localhost:5050/favorites', { recipe }, {
+            await axios.post(`${config.API_URL}/favorites`, { recipe }, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             alert('Recipe added to favorites');
