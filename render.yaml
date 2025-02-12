@@ -11,15 +11,15 @@ services:
       - key: PORT
         value: "10000"
       - key: JWT_SECRET
-        generateValue: true # This will generate a secure random value
+        generateValue: true
       - key: SPOONACULAR_API_KEY
-        sync: false # You'll need to set this manually in Render dashboard
+        sync: false
     plan: free
 
   - type: web
     name: recipe-project-frontend
     env: static
-    buildCommand: npm install && npm run build
+    buildCommand: npm install && npm run build # Fixed: Removed 'cd client'
     staticPublishPath: ./build
     routes:
       - type: rewrite
