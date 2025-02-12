@@ -14,11 +14,9 @@ services:
         generateValue: true
       - key: SPOONACULAR_API_KEY
         sync: false
-    plan: free
 
-  - type: web
+  - type: static
     name: recipe-project-frontend
-    env: static
     buildCommand: npm install && npm run build
     staticPublishPath: ./build
     routes:
@@ -30,4 +28,3 @@ services:
         value: production
       - key: REACT_APP_API_URL
         value: https://recipe-project-backend.onrender.com
-    plan: free
