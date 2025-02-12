@@ -15,8 +15,9 @@ services:
       - key: SPOONACULAR_API_KEY
         sync: false
 
-  - type: static
+  - type: web
     name: recipe-project-frontend
+    env: static
     buildCommand: npm install && npm run build
     staticPublishPath: ./build
     routes:
