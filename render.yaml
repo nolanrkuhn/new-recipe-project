@@ -14,9 +14,9 @@ services:
         generateValue: true
       - key: SPOONACULAR_API_KEY
         sync: false
-    plan: starter # Changed from 'free' to 'starter'
+    plan: starter
 
-  - type: static
+  - type: web
     name: recipe-project-frontend
     env: static
     buildCommand: npm install && npm run build
@@ -30,3 +30,4 @@ services:
         value: production
       - key: REACT_APP_API_URL
         value: https://recipe-project-backend.onrender.com
+    plan: starter
