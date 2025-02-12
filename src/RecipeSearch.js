@@ -14,6 +14,17 @@ const RecipeSearch = ({ user }) => {
     const [cuisine, setCuisine] = useState('');
     const pageSize = 10;
 
+    const debugApiCall = async (url, params) => {
+        try {
+          const response = await axios.get(`${config.API_URL}/api/health`);
+          console.log('Health check response:', response.data);
+        } catch (error) {
+          console.error('Health check failed:', error);
+        }
+        console.log('Attempting API call to:', url);
+        console.log('With parameters:', params);
+      };
+
     const searchRecipes = async () => {
         if (!query) {
             setError('Please enter a search term.');
@@ -22,6 +33,12 @@ const RecipeSearch = ({ user }) => {
         try {
             setLoading(true);
             setError(null);
+            
+            // Add debug call
+            await debugApiCall(`${config.API_URL}${config.ENDPOINTS.RECIPES}`, {
+                query, offset: page * pageSize, number: pageSize, diet, cuisine
+            });
+    
             const response = await axios.get(`${config.API_URL}${config.ENDPOINTS.RECIPES}`, {
                 params: { query, offset: page * pageSize, number: pageSize, diet, cuisine }
             });
@@ -31,8 +48,16 @@ const RecipeSearch = ({ user }) => {
                 setError('No recipes found. Try a different search term.');
             }
         } catch (error) {
-            setError('Error fetching recipes. Please try again.');
-            console.error(error);
+            setError(`Error fetching recipes: ${error.message}`);
+            console.error('Detailed error:', {
+                message: error.message,
+                response: error.response?.data,
+                status: error.response?.status,
+                config: {
+                    url: error.config?.url,
+                    params: error.config?.params
+                }
+            });
         } finally {
             setLoading(false);
         }

@@ -122,6 +122,28 @@ const errorHandler = (err, req, res, next) => {
   res.status(500).json({ error: 'Something went wrong. Please try again later.' });
 };
 
+app.use('/api', express.Router()
+  .get('/recipes', async (req, res, next) => {
+    const { query, offset, number, diet, cuisine } = req.query;
+    try {
+      const response = await axios.get('https://api.spoonacular.com/recipes/complexSearch', {
+        params: {
+          query: query,
+          offset: offset,
+          number: number,
+          diet: diet,
+          cuisine: cuisine,
+          apiKey: SPOONACULAR_API_KEY
+        }
+      });
+      res.json({ results: response.data.results, totalResults: response.data.totalResults });
+    } catch (error) {
+      console.error('Spoonacular API Error:', error.response?.data || error.message);
+      next(new Error('Error fetching recipes from Spoonacular API'));
+    }
+  })
+);
+
 // Routes
 app.post('/register', async (req, res) => {
   const { username, password } = req.body;
@@ -171,6 +193,14 @@ app.get('/recipes', async (req, res, next) => {
   } catch (error) {
     next(new Error('Error fetching recipes from Spoonacular API'));
   }
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    version: process.env.npm_package_version || '1.0.0'
+  });
 });
 
 app.post('/favorites', authenticateToken, async (req, res, next) => {
@@ -239,6 +269,17 @@ app.get('/ratings/:recipeId', async (req, res, next) => {
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
+});
+
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Not Found',
+    message: `Cannot ${req.method} ${req.path}`,
+    availableEndpoints: [
+      '/api/recipes',
+      '/api/health'
+    ]
+  });
 });
 
 // Use error handling middleware
