@@ -1,27 +1,33 @@
 services:
   - type: web
-    name: recipe-finder-api
+    name: recipe-project-backend
     env: node
-    plan: free
+    region: oregon
     buildCommand: cd server && npm install
     startCommand: cd server && npm start
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: "10000"
       - key: JWT_SECRET
-        generateValue: true
-    healthCheckPath: /api/health
+        generateValue: true # This will generate a secure random value
+      - key: SPOONACULAR_API_KEY
+        sync: false # You'll need to set this manually in Render dashboard
+    plan: free
 
   - type: web
-    name: recipe-finder-frontend
+    name: recipe-project-frontend
     env: static
-    buildCommand: cd client && npm install && npm run build
-    staticPublishPath: ./client/build
-    headers:
-      - path: /*
-        name: Cache-Control
-        value: no-cache
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./build
     routes:
       - type: rewrite
         source: /*
         destination: /index.html
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: REACT_APP_API_URL
+        value: https://recipe-project-backend.onrender.com
+    plan: free
