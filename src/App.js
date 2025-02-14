@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import './index.css';
-import Login from './Login';
+import Login from './pages/Login';
 import Register from './Register';
 import RecipeSearch from './RecipeSearch';
 import Favorites from './Favorites';

@@ -29,4 +29,20 @@ describe('App Component', () => {
     expect(loginLink).toBeInTheDocument();
     expect(registerLink).toBeInTheDocument();
   });
+
+  test('renders logout button when user is logged in', () => {
+    localStorage.setItem('token', 'dummy-token');
+    render(<App />);
+    const logoutButton = screen.getByText(/logout/i);
+    expect(logoutButton).toBeInTheDocument();
+    localStorage.removeItem('token');
+  });
+
+  test('renders favorite recipes link when user is logged in', () => {
+    localStorage.setItem('token', 'dummy-token');
+    render(<App />);
+    const favoritesLink = screen.getByText(/favorites/i);
+    expect(favoritesLink).toBeInTheDocument();
+    localStorage.removeItem('token');
+  });
 });
