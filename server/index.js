@@ -1,11 +1,11 @@
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
 const { Sequelize, DataTypes } = require('sequelize');
 const validator = require('validator');
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 
 dotenv.config();
@@ -22,7 +22,7 @@ const sequelize = new Sequelize({
   storage: 'database.sqlite'
 });
 
-// Define User model
+// Define models
 const User = sequelize.define('User', {
   username: {
     type: DataTypes.STRING,
@@ -35,7 +35,6 @@ const User = sequelize.define('User', {
   }
 });
 
-// Define Favorite model
 const Favorite = sequelize.define('Favorite', {
   userId: {
     type: DataTypes.INTEGER,
@@ -55,7 +54,6 @@ const Favorite = sequelize.define('Favorite', {
   }
 });
 
-// Define Comment model
 const Comment = sequelize.define('Comment', {
   userId: {
     type: DataTypes.INTEGER,
@@ -71,7 +69,6 @@ const Comment = sequelize.define('Comment', {
   }
 });
 
-// Define Rating model
 const Rating = sequelize.define('Rating', {
   userId: {
     type: DataTypes.INTEGER,

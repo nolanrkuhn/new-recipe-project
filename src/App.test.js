@@ -18,7 +18,7 @@ describe('App Component', () => {
 
   test('renders Recipe Finder heading', () => {
     render(<App />);
-    const heading = screen.getByText(/🍽️ Recipe Finder/i, { selector: 'h1' });
+    const heading = screen.getByText(/\ud83c\udf7d\ufe0f Recipe Finder/i, { selector: 'h1' });
     expect(heading).toBeInTheDocument();
   });
 
