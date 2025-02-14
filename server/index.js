@@ -11,7 +11,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 5050;
+const port = process.env.PORT || 5050; // Use the PORT environment variable or default to 5050
 
 const SPOONACULAR_API_KEY = process.env.SPOONACULAR_API_KEY;
 const JWT_SECRET = process.env.JWT_SECRET;
