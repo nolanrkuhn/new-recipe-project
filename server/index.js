@@ -1,17 +1,20 @@
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
 const { Sequelize, DataTypes } = require('sequelize');
 const validator = require('validator');
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 5050;
 
-const SPOONACULAR_API_KEY = '28670279fa9c40e18481bf0311202bd2';
-const JWT_SECRET = 'your_jwt_secret'; // Replace with your own secret key for JWT
+const SPOONACULAR_API_KEY = process.env.SPOONACULAR_API_KEY;
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Initialize Sequelize with SQLite
 const sequelize = new Sequelize({
@@ -287,7 +290,5 @@ app.use(errorHandler);
 
 // Sync database and start the server
 sequelize.sync().then(() => {
-  app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-  });
+  app.listen(port, () => console.log(`Server running on port ${port}`));
 });
