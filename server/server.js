@@ -74,8 +74,6 @@ app.get('/me', (req, res) => {
     }
 });
 
-// Recipe Search Endpoint
-// Recipe Search Endpoint
 app.get('/api/recipes', async (req, res) => {
     try {
         const { query, offset, number, diet, cuisine } = req.query;
