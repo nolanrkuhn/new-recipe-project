@@ -9,7 +9,7 @@ const RecipeSearch = ({ user }) => {
 
   const handleSearch = async () => {
     try {
-      const response = await axios.get('http://localhost:5050/api/recipes', {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/recipes`, {
         params: { query }
       });
       setRecipes(response.data.results);
