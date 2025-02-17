@@ -99,9 +99,13 @@ app.get('/api/recipes', async (req, res) => {
 });
 
 // NEW: Recipe Details Endpoint
+// Update the Recipe Details Endpoint with better error handling
 app.get('/recipes/:id', async (req, res) => {
     try {
         const { id } = req.params;
+        console.log(`Fetching recipe ${id}`); // Debug log
+        console.log('API Key exists:', !!process.env.SPOONACULAR_API_KEY); // Debug log (safe way to check)
+        
         const response = await axios.get(
             `https://api.spoonacular.com/recipes/${id}/information`,
             {
@@ -111,7 +115,9 @@ app.get('/recipes/:id', async (req, res) => {
             }
         );
         
-        // Transform the response to match your frontend expectations
+        // Debug log
+        console.log('Spoonacular API response received');
+        
         const recipe = {
             id: response.data.id,
             title: response.data.title,
@@ -125,15 +131,24 @@ app.get('/recipes/:id', async (req, res) => {
             ),
             instructions: response.data.analyzedInstructions[0]?.steps.map(step => 
                 step.step
-            ) || response.data.instructions.split('\n').filter(step => step.trim())
+            ) || (response.data.instructions || '').split('\n').filter(step => step.trim())
         };
         
         res.json(recipe);
     } catch (error) {
-        console.error('Spoonacular API Error:', error.response?.data || error.message);
-        res.status(500).json({ 
+        console.error('Error details:', {
+            message: error.message,
+            status: error.response?.status,
+            data: error.response?.data,
+            stack: error.stack
+        });
+
+        // Send appropriate status code based on the error
+        const status = error.response?.status || 500;
+        res.status(status).json({ 
             error: 'Error fetching recipe details',
-            details: error.response?.data || error.message 
+            message: error.response?.data?.message || error.message,
+            status: status
         });
     }
 });
