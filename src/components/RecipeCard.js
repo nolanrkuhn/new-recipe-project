@@ -1,9 +1,16 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import './RecipeCard.css';
 
 const RecipeCard = ({ recipe }) => {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/recipes/${recipe.id}`); // Note: Changed to match your route pattern
+  };
+
   return (
-    <div className="recipe-card">
+    <div className="recipe-card" onClick={handleClick} role="button" tabIndex={0}>
       {recipe.image && (
         <img src={recipe.image} alt={recipe.title} />
       )}

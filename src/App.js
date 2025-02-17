@@ -15,7 +15,9 @@ const App = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      axios.get('http://localhost:5050/me', { headers: { Authorization: `Bearer ${token}` } })
+      axios.get(`${process.env.REACT_APP_API_URL}/me`, { 
+        headers: { Authorization: `Bearer ${token}` } 
+      })
         .then((response) => setUser(response.data))
         .catch(() => localStorage.removeItem('token'));
     }
@@ -35,8 +37,8 @@ const App = () => {
             <Route path="/" element={<RecipeSearch user={user} />} />
             <Route path="/login" element={<Login setUser={setUser} />} />
             <Route path="/register" element={<Register setUser={setUser} />} />
-            <Route path="/favorites" element={<Favorites />} />
-            <Route path="/recipes/:id" element={<RecipeDetails />} />
+            <Route path="/favorites" element={<Favorites user={user} />} />
+            <Route path="/recipes/:id" element={<RecipeDetails user={user} />} />
           </Routes>
         </div>
       </div>
