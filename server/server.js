@@ -75,7 +75,8 @@ app.get('/me', (req, res) => {
 });
 
 // Recipe Search Endpoint
-app.get('/api/recipes/:id', async (req, res) => {
+// Recipe Search Endpoint
+app.get('/api/recipes', async (req, res) => {
     try {
         const { query, offset, number, diet, cuisine } = req.query;
         const response = await axios.get(`https://api.spoonacular.com/recipes/complexSearch`, {
@@ -94,6 +95,58 @@ app.get('/api/recipes/:id', async (req, res) => {
         res.status(500).json({ 
             error: 'Error fetching recipes',
             details: error.response?.data || error.message 
+        });
+    }
+});
+
+// Recipe Details Endpoint
+app.get('/api/recipes/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log(`Fetching recipe ${id}`); // Debug log
+        console.log('API Key exists:', !!process.env.SPOONACULAR_API_KEY);
+        
+        const response = await axios.get(
+            `https://api.spoonacular.com/recipes/${id}/information`,
+            {
+                params: {
+                    apiKey: process.env.SPOONACULAR_API_KEY
+                }
+            }
+        );
+        
+        console.log('Spoonacular API response received');
+        
+        const recipe = {
+            id: response.data.id,
+            title: response.data.title,
+            image: response.data.image,
+            description: response.data.summary,
+            cookTime: `${response.data.readyInMinutes} minutes`,
+            difficulty: response.data.difficulty || 'Medium',
+            servings: response.data.servings,
+            ingredients: response.data.extendedIngredients.map(ing => 
+                `${ing.amount} ${ing.unit} ${ing.name}`
+            ),
+            instructions: response.data.analyzedInstructions[0]?.steps.map(step => 
+                step.step
+            ) || (response.data.instructions || '').split('\n').filter(step => step.trim())
+        };
+        
+        res.json(recipe);
+    } catch (error) {
+        console.error('Error details:', {
+            message: error.message,
+            status: error.response?.status,
+            data: error.response?.data,
+            stack: error.stack
+        });
+
+        const status = error.response?.status || 500;
+        res.status(status).json({ 
+            error: 'Error fetching recipe details',
+            message: error.response?.data?.message || error.message,
+            status: status
         });
     }
 });
