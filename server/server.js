@@ -153,6 +153,47 @@ app.get('/recipes/:id', async (req, res) => {
     }
 });
 
+// Add this endpoint before your catch-all 404 handler
+app.get('/test-spoonacular', async (req, res) => {
+    try {
+        console.log('Testing Spoonacular API connection');
+        console.log('API Key exists:', !!process.env.SPOONACULAR_API_KEY);
+        console.log('API Key length:', process.env.SPOONACULAR_API_KEY?.length);
+
+        // Try a simple search request to test the API key
+        const testResponse = await axios.get('https://api.spoonacular.com/recipes/complexSearch', {
+            params: {
+                query: 'pasta',
+                number: 1,
+                apiKey: process.env.SPOONACULAR_API_KEY
+            }
+        });
+
+        res.json({
+            success: true,
+            apiKeyExists: !!process.env.SPOONACULAR_API_KEY,
+            apiKeyLength: process.env.SPOONACULAR_API_KEY?.length,
+            testResponse: testResponse.data,
+            environment: process.env.NODE_ENV
+        });
+    } catch (error) {
+        console.error('Spoonacular API Test Error:', {
+            message: error.message,
+            status: error.response?.status,
+            data: error.response?.data
+        });
+
+        res.status(500).json({
+            success: false,
+            error: 'API Test Failed',
+            message: error.response?.data?.message || error.message,
+            apiKeyExists: !!process.env.SPOONACULAR_API_KEY,
+            apiKeyLength: process.env.SPOONACULAR_API_KEY?.length,
+            environment: process.env.NODE_ENV
+        });
+    }
+});
+
 app.use((req, res, next) => {
     res.status(404).json({ error: `Cannot ${req.method} ${req.path}` });
 });
