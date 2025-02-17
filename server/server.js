@@ -75,7 +75,7 @@ app.get('/me', (req, res) => {
 });
 
 // Recipe Search Endpoint
-app.get('/api/recipes', async (req, res) => {
+app.get('/api/recipes/:id', async (req, res) => {
     try {
         const { query, offset, number, diet, cuisine } = req.query;
         const response = await axios.get(`https://api.spoonacular.com/recipes/complexSearch`, {
@@ -149,6 +149,37 @@ app.get('/recipes/:id', async (req, res) => {
             error: 'Error fetching recipe details',
             message: error.response?.data?.message || error.message,
             status: status
+        });
+    }
+});
+
+// Add this endpoint
+app.get('/api/test', async (req, res) => {
+    try {
+        console.log('Testing Spoonacular API connection');
+        console.log('API Key exists:', !!process.env.SPOONACULAR_API_KEY);
+        
+        const testResponse = await axios.get('https://api.spoonacular.com/recipes/complexSearch', {
+            params: {
+                query: 'pasta',
+                number: 1,
+                apiKey: process.env.SPOONACULAR_API_KEY
+            }
+        });
+
+        res.json({
+            success: true,
+            apiKeyExists: !!process.env.SPOONACULAR_API_KEY,
+            testResponse: testResponse.data,
+            environment: process.env.NODE_ENV
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'API Test Failed',
+            message: error.response?.data?.message || error.message,
+            apiKeyExists: !!process.env.SPOONACULAR_API_KEY,
+            environment: process.env.NODE_ENV
         });
     }
 });

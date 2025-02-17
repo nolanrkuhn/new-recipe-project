@@ -17,25 +17,38 @@ const RecipeDetails = () => {
       setError(null);
       
       try {
-        console.log('API URL:', process.env.REACT_APP_API_URL); // Debug log
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/recipes/${id}`, {
+        console.log('Fetching recipe:', id); // Debug log
+        // Updated endpoint to use /api/recipes/:id
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/recipes/${id}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
         
-        console.log('Recipe data received:', response.data); // Debug log
-        setRecipe(response.data);
-        setLoading(false);
+        if (response.data) {
+          console.log('Recipe data received:', response.data); // Debug log
+          setRecipe(response.data);
+        } else {
+          throw new Error('No recipe data received');
+        }
       } catch (error) {
         console.error('Error details:', error);
-        setError(
-          error.response?.data?.message || 
-          error.response?.data?.error || 
-          'Error fetching recipe details'
-        );
-        setLoading(false);
-        if (error.response?.status === 401) {
+        
+        // More specific error messages based on status codes
+        if (error.response?.status === 404) {
+          setError('Recipe not found. Please check the recipe ID.');
+        } else if (error.response?.status === 401) {
+          setError('Authentication required. Please log in.');
           navigate('/login');
+        } else if (error.response?.status === 500) {
+          setError('Server error. Please try again later.');
+        } else {
+          setError(
+            error.response?.data?.message || 
+            error.response?.data?.error || 
+            'Error fetching recipe details'
+          );
         }
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -45,8 +58,22 @@ const RecipeDetails = () => {
   }, [id, navigate]);
 
   if (loading) return <div className="loading">Loading...</div>;
-  if (error) return <div className="error">{error}</div>;
-  if (!recipe) return <div className="error">Recipe not found</div>;
+  if (error) return (
+    <div className="error-container">
+      <div className="error">{error}</div>
+      <button className="back-button" onClick={() => navigate(-1)}>
+        &larr; Back to Search
+      </button>
+    </div>
+  );
+  if (!recipe) return (
+    <div className="error-container">
+      <div className="error">Recipe not found</div>
+      <button className="back-button" onClick={() => navigate(-1)}>
+        &larr; Back to Search
+      </button>
+    </div>
+  );
 
   return (
     <div className="recipe-details">
@@ -79,7 +106,10 @@ const RecipeDetails = () => {
       {recipe.description && (
         <div className="recipe-description">
           <h2>Description</h2>
-          <p>{recipe.description}</p>
+          <div 
+            dangerouslySetInnerHTML={{ __html: recipe.description }} 
+            className="description-content"
+          />
         </div>
       )}
 

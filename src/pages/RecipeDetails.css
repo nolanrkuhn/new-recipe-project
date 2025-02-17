@@ -106,3 +106,26 @@
   line-height: 1.6;
   color: var(--text);
 }
+
+.error-container {
+  text-align: center;
+  padding: 2rem;
+}
+
+.description-content {
+  margin: 1rem 0;
+  line-height: 1.6;
+}
+
+.description-content p {
+  margin-bottom: 1rem;
+}
+
+.error {
+  color: #dc3545;
+  padding: 1rem;
+  margin: 1rem 0;
+  border: 1px solid #dc3545;
+  border-radius: 4px;
+  background-color: #f8d7da;
+}
