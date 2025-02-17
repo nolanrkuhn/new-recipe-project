@@ -13,16 +13,25 @@ const RecipeDetails = () => {
   useEffect(() => {
     const fetchRecipe = async () => {
       const token = localStorage.getItem('token');
+      setLoading(true);
+      setError(null);
+      
       try {
-        // Updated URL to match your backend structure
-        const response = await axios.get(`http://localhost:5050/recipes/${id}`, {
+        console.log('API URL:', process.env.REACT_APP_API_URL); // Debug log
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/recipes/${id}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
+        
+        console.log('Recipe data received:', response.data); // Debug log
         setRecipe(response.data);
         setLoading(false);
       } catch (error) {
-        console.error('Error details:', error); // Add this for debugging
-        setError('Error fetching recipe details');
+        console.error('Error details:', error);
+        setError(
+          error.response?.data?.message || 
+          error.response?.data?.error || 
+          'Error fetching recipe details'
+        );
         setLoading(false);
         if (error.response?.status === 401) {
           navigate('/login');
@@ -30,7 +39,9 @@ const RecipeDetails = () => {
       }
     };
 
-    fetchRecipe();
+    if (id) {
+      fetchRecipe();
+    }
   }, [id, navigate]);
 
   if (loading) return <div className="loading">Loading...</div>;

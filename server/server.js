@@ -7,8 +7,22 @@ const axios = require('axios');
 
 dotenv.config();
 const app = express();
-app.use(cors());
+
+const corsOptions = {
+    origin: process.env.NODE_ENV === 'production' 
+      ? 'https://recipe-project-frontend.onrender.com'
+      : process.env.CORS_ORIGIN || 'http://localhost:3000',
+    credentials: true,
+    optionsSuccessStatus: 200
+  };
+
+app.use(cors(corsOptions));
 app.use(express.json());
+
+console.log('Server Configuration:');
+console.log('Environment:', process.env.NODE_ENV);
+console.log('CORS Origin:', corsOptions.origin);
+console.log('Port:', process.env.PORT);
 
 const users = []; // Temporary storage, replace with DB later
 
