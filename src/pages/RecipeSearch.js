@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import RecipeCard from '../components/RecipeCard';
+import './RecipeSearch.css';  // Add this import
 
 const RecipeSearch = ({ user }) => {
   const [recipes, setRecipes] = useState([]);
@@ -19,13 +20,20 @@ const RecipeSearch = ({ user }) => {
     }
   };
 
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
   return (
-    <div>
+    <div className="container">
       <div className="search-bar">
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onKeyPress={handleKeyPress}
           placeholder="Search for recipes..."
         />
         <button onClick={handleSearch}>Search</button>
