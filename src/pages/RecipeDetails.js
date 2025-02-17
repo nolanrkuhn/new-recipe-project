@@ -14,12 +14,14 @@ const RecipeDetails = () => {
     const fetchRecipe = async () => {
       const token = localStorage.getItem('token');
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/recipes/${id}`, {
+        // Updated URL to match your backend structure
+        const response = await axios.get(`http://localhost:5050/recipes/${id}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
         setRecipe(response.data);
         setLoading(false);
       } catch (error) {
+        console.error('Error details:', error); // Add this for debugging
         setError('Error fetching recipe details');
         setLoading(false);
         if (error.response?.status === 401) {

@@ -1,4 +1,3 @@
-// Updated Express Backend with User Authentication
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
@@ -24,7 +23,8 @@ app.get('/health', (req, res) => {
         environment: process.env.NODE_ENV
     });
 });
-// User Registration (optional)
+
+// User Registration
 app.post('/register', async (req, res) => {
     const { email, password, name } = req.body;
     if (users.find(user => user.email === email)) {
@@ -84,6 +84,46 @@ app.get('/api/recipes', async (req, res) => {
     }
 });
 
+// NEW: Recipe Details Endpoint
+app.get('/recipes/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const response = await axios.get(
+            `https://api.spoonacular.com/recipes/${id}/information`,
+            {
+                params: {
+                    apiKey: process.env.SPOONACULAR_API_KEY
+                }
+            }
+        );
+        
+        // Transform the response to match your frontend expectations
+        const recipe = {
+            id: response.data.id,
+            title: response.data.title,
+            image: response.data.image,
+            description: response.data.summary,
+            cookTime: `${response.data.readyInMinutes} minutes`,
+            difficulty: response.data.difficulty || 'Medium',
+            servings: response.data.servings,
+            ingredients: response.data.extendedIngredients.map(ing => 
+                `${ing.amount} ${ing.unit} ${ing.name}`
+            ),
+            instructions: response.data.analyzedInstructions[0]?.steps.map(step => 
+                step.step
+            ) || response.data.instructions.split('\n').filter(step => step.trim())
+        };
+        
+        res.json(recipe);
+    } catch (error) {
+        console.error('Spoonacular API Error:', error.response?.data || error.message);
+        res.status(500).json({ 
+            error: 'Error fetching recipe details',
+            details: error.response?.data || error.message 
+        });
+    }
+});
+
 app.use((req, res, next) => {
     res.status(404).json({ error: `Cannot ${req.method} ${req.path}` });
 });
@@ -95,7 +135,6 @@ app.use((err, req, res, next) => {
         message: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
 });
-// Start Server
+
 const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
