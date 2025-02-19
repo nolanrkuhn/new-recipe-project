@@ -10,11 +10,12 @@ const app = express();
 
 const corsOptions = {
     origin: process.env.NODE_ENV === 'production' 
-      ? 'https://recipe-project-frontend.onrender.com'
+      ? ['https://recipe-project-frontend.onrender.com', 'http://localhost:3000']
       : process.env.CORS_ORIGIN || 'http://localhost:3000',
     credentials: true,
     optionsSuccessStatus: 200
-  };
+};
+
 
 app.use(cors(corsOptions));
 app.use(express.json());
