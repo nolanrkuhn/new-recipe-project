@@ -8,18 +8,33 @@ const axios = require('axios');
 dotenv.config();
 const app = express();
 
-const allowedOrigins = ["https://recipe-project-frontend.onrender.com", "http://localhost:3000"];
+// Define allowed origins
+const allowedOrigins = [
+    'https://recipe-project-frontend.onrender.com',
+    'http://localhost:3000'
+];
 
-app.use(cors({
+// CORS configuration
+const corsOptions = {
     origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
+        // Allow requests with no origin (like mobile apps, curl, postman)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
-            callback(new Error("Not allowed by CORS"));
+            callback(new Error('Not allowed by CORS'));
         }
     },
-    credentials: true
-}));
+    credentials: true,
+    optionsSuccessStatus: 200
+};
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
+
+// Remove the additional CORS middleware since it's redundant
+// and might cause conflicts
 
 app.use(express.json());
 

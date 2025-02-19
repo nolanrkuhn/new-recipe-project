@@ -1,8 +1,8 @@
 // Base API URL
 const isProd = process.env.NODE_ENV === 'production';
 export const API_URL = isProd 
-  ? 'https://recipe-project-backend-enn6.onrender.com'
-  : (process.env.REACT_APP_API_URL || 'http://localhost:3001');
+  ? 'https://recipe-project-backend-enn6.onrender.com'  // Your production backend URL
+  : 'http://localhost:5050';  // Your local backend URL
 
 // API endpoints
 export const ENDPOINTS = {
