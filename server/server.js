@@ -19,6 +19,9 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+const SPOONACULAR_API_KEY = process.env.SPOONACULAR_API_KEY;
+const SPOONACULAR_URL = 'https://api.spoonacular.com/recipes';
+
 console.log('Server Configuration:');
 console.log('Environment:', process.env.NODE_ENV);
 console.log('CORS Origin:', corsOptions.origin);
@@ -101,51 +104,24 @@ app.get('/api/recipes', async (req, res) => {
 app.get('/api/recipes/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        console.log(`Fetching recipe ${id}`); // Debug log
-        console.log('API Key exists:', !!process.env.SPOONACULAR_API_KEY);
+        console.log(`Fetching recipe ${id}`);
+        let recipe;
         
-        const response = await axios.get(
-            `https://api.spoonacular.com/recipes/${id}/information`,
-            {
-                params: {
-                    apiKey: process.env.SPOONACULAR_API_KEY
-                }
-            }
-        );
-        
-        console.log('Spoonacular API response received');
-        
-        const recipe = {
-            id: response.data.id,
-            title: response.data.title,
-            image: response.data.image,
-            description: response.data.summary,
-            cookTime: `${response.data.readyInMinutes} minutes`,
-            difficulty: response.data.difficulty || 'Medium',
-            servings: response.data.servings,
-            ingredients: response.data.extendedIngredients.map(ing => 
-                `${ing.amount} ${ing.unit} ${ing.name}`
-            ),
-            instructions: response.data.analyzedInstructions[0]?.steps.map(step => 
-                step.step
-            ) || (response.data.instructions || '').split('\n').filter(step => step.trim())
-        };
+        try {
+            const response = await axios.get(
+                `${SPOONACULAR_URL}/${id}/information`,
+                { params: { apiKey: SPOONACULAR_API_KEY } }
+            );
+            recipe = response.data;
+        } catch (error) {
+            console.error('Spoonacular API Error:', error.response?.data || error.message);
+            return res.status(404).json({ message: 'Recipe not found' });
+        }
         
         res.json(recipe);
     } catch (error) {
-        console.error('Error details:', {
-            message: error.message,
-            status: error.response?.status,
-            data: error.response?.data,
-            stack: error.stack
-        });
-
-        const status = error.response?.status || 500;
-        res.status(status).json({ 
-            error: 'Error fetching recipe details',
-            message: error.response?.data?.message || error.message,
-            status: status
-        });
+        console.error('Error fetching recipe:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 });
 
