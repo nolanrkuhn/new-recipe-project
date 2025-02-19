@@ -9,15 +9,26 @@ dotenv.config();
 const app = express();
 
 const corsOptions = {
-    origin: process.env.NODE_ENV === 'production' 
-      ? ['https://recipe-project-frontend.onrender.com', 'http://localhost:3000']
-      : process.env.CORS_ORIGIN || 'http://localhost:3000',
+    origin: [
+        'https://recipe-project-frontend.onrender.com',  // ✅ Allow frontend on Render
+        'http://localhost:3000',  // ✅ Keep local for testing
+    ],
     credentials: true,
     optionsSuccessStatus: 200
 };
 
-
 app.use(cors(corsOptions));
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "https://recipe-project-frontend.onrender.com");
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+    if (req.method === "OPTIONS") {
+        return res.sendStatus(200);
+    }
+    next();
+});
+
 app.use(express.json());
 
 const SPOONACULAR_API_KEY = process.env.SPOONACULAR_API_KEY;
