@@ -69,6 +69,14 @@ const RecipeDetails = () => {
     </div>
   );
 
+  const ingredientsList = Array.isArray(recipe.ingredients)
+    ? recipe.ingredients
+    : recipe.extendedIngredients?.map(ing => `${ing.amount} ${ing.unit} ${ing.name}`) || [];
+
+  const instructionsList = Array.isArray(recipe.instructions)
+    ? recipe.instructions
+    : recipe.analyzedInstructions?.[0]?.steps.map(step => step.step) || [];
+
   return (
     <div className="recipe-details">
       <button className="back-button" onClick={() => navigate(-1)}>
@@ -98,9 +106,9 @@ const RecipeDetails = () => {
       <div className="recipe-ingredients">
         <h2>Ingredients</h2>
         <ul>
-          {Array.isArray(recipe.ingredients) ? (
-            recipe.ingredients.map((ingredient, index) => (
-              <li key={index}>{typeof ingredient === 'string' ? ingredient : JSON.stringify(ingredient)}</li>
+          {ingredientsList.length > 0 ? (
+            ingredientsList.map((ingredient, index) => (
+              <li key={index}>{ingredient}</li>
             ))
           ) : (
             <p>No ingredients available.</p>
@@ -111,9 +119,9 @@ const RecipeDetails = () => {
       <div className="recipe-instructions">
         <h2>Instructions</h2>
         <ol>
-          {Array.isArray(recipe.instructions) ? (
-            recipe.instructions.map((step, index) => (
-              <li key={index}>{typeof step === 'string' ? step : JSON.stringify(step)}</li>
+          {instructionsList.length > 0 ? (
+            instructionsList.map((step, index) => (
+              <li key={index}>{step}</li>
             ))
           ) : (
             <p>No instructions available.</p>
