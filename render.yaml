@@ -28,4 +28,4 @@ services:
       - key: NODE_ENV
         value: production
       - key: REACT_APP_API_URL
-        value: https://recipe-project-backend.onrender.com
+        value: https://recipe-project-backend-enn6.onrender.com
