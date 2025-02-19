@@ -105,34 +105,29 @@ app.get('/api/recipes/:id', async (req, res) => {
     try {
         const { id } = req.params;
         console.log(`Fetching recipe ID: ${id}`);
-        
-        if (!SPOONACULAR_API_KEY) {
+
+        if (!process.env.SPOONACULAR_API_KEY) {
             console.error('Missing Spoonacular API key');
             return res.status(500).json({ message: 'Missing Spoonacular API key' });
         }
 
-        try {
-            const response = await axios.get(`${SPOONACULAR_URL}/${id}/information`, {
-                params: { apiKey: SPOONACULAR_API_KEY }
-            });
-            
-            if (!response.data || !response.data.id) {
-                console.error(`No valid data for recipe ID: ${id}`);
-                return res.status(404).json({ message: 'Recipe not found in Spoonacular' });
-            }
-            
-            console.log(`Recipe ${id} found: ${response.data.title}`);
-            res.json(response.data);
-        } catch (error) {
-            console.error(`Spoonacular API Error for recipe ${id}:`, error.response?.data || error.message);
-            const status = error.response?.status || 500;
-            res.status(status).json({ message: 'Error fetching recipe details', error: error.response?.data || error.message });
-        }
+        const spoonacularUrl = `https://api.spoonacular.com/recipes/${id}/information?apiKey=${process.env.SPOONACULAR_API_KEY}`;
+        console.log(`Requesting Spoonacular URL: ${spoonacularUrl}`);
+
+        const response = await axios.get(spoonacularUrl);
+        console.log(`Recipe ${id} found: ${response.data.title}`);
+
+        return res.json(response.data);
     } catch (error) {
-        console.error('Internal Server Error:', error);
-        res.status(500).json({ message: 'Internal Server Error' });
+        console.error(`Spoonacular API Error for recipe ${id}:`, error.response?.data || error.message);
+        return res.status(error.response?.status || 500).json({
+            message: 'Error fetching recipe details',
+            error: error.response?.data || error.message
+        });
     }
 });
+
+
 
 // NEW: Recipe Details Endpoint
 // Update the Recipe Details Endpoint with better error handling
