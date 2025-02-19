@@ -8,26 +8,18 @@ const axios = require('axios');
 dotenv.config();
 const app = express();
 
-const corsOptions = {
-    origin: [
-        'https://recipe-project-frontend.onrender.com',  // ✅ Allow frontend on Render
-        'http://localhost:3000',  // ✅ Keep local for testing
-    ],
-    credentials: true,
-    optionsSuccessStatus: 200
-};
+const allowedOrigins = ["https://recipe-project-frontend.onrender.com", "http://localhost:3000"];
 
-app.use(cors(corsOptions));
-app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "https://recipe-project-frontend.onrender.com");
-    res.header("Access-Control-Allow-Credentials", "true");
-    res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-    if (req.method === "OPTIONS") {
-        return res.sendStatus(200);
-    }
-    next();
-});
+app.use(cors({
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
+    credentials: true
+}));
 
 app.use(express.json());
 
@@ -36,7 +28,7 @@ const SPOONACULAR_URL = 'https://api.spoonacular.com/recipes';
 
 console.log('Server Configuration:');
 console.log('Environment:', process.env.NODE_ENV);
-console.log('CORS Origin:', corsOptions.origin);
+console.log('Allowed CORS Origins:', allowedOrigins);
 console.log('Port:', process.env.PORT);
 
 const users = []; // Temporary storage, replace with DB later
