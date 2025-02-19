@@ -17,14 +17,13 @@ const RecipeDetails = () => {
       setError(null);
       
       try {
-        console.log('Fetching recipe:', id); // Debug log
-        // Updated endpoint to use /api/recipes/:id
+        console.log('Fetching recipe:', id);
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/recipes/${id}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
         
         if (response.data) {
-          console.log('Recipe data received:', response.data); // Debug log
+          console.log('Recipe data received:', response.data);
           setRecipe(response.data);
         } else {
           throw new Error('No recipe data received');
@@ -32,7 +31,6 @@ const RecipeDetails = () => {
       } catch (error) {
         console.error('Error details:', error);
         
-        // More specific error messages based on status codes
         if (error.response?.status === 404) {
           setError('Recipe not found. Please check the recipe ID.');
         } else if (error.response?.status === 401) {
@@ -41,11 +39,7 @@ const RecipeDetails = () => {
         } else if (error.response?.status === 500) {
           setError('Server error. Please try again later.');
         } else {
-          setError(
-            error.response?.data?.message || 
-            error.response?.data?.error || 
-            'Error fetching recipe details'
-          );
+          setError(error.response?.data?.message || 'Error fetching recipe details');
         }
       } finally {
         setLoading(false);
@@ -89,45 +83,41 @@ const RecipeDetails = () => {
       </div>
 
       <div className="recipe-info">
-        <div className="info-item">
-          <span className="label">Cook Time:</span>
-          <span>{recipe.cookTime || 'Not specified'}</span>
-        </div>
-        <div className="info-item">
-          <span className="label">Difficulty:</span>
-          <span>{recipe.difficulty || 'Not specified'}</span>
-        </div>
-        <div className="info-item">
-          <span className="label">Servings:</span>
-          <span>{recipe.servings || 'Not specified'}</span>
-        </div>
+        <div className="info-item"><span className="label">Cook Time:</span> {recipe.cookTime || 'Not specified'}</div>
+        <div className="info-item"><span className="label">Difficulty:</span> {recipe.difficulty || 'Not specified'}</div>
+        <div className="info-item"><span className="label">Servings:</span> {recipe.servings || 'Not specified'}</div>
       </div>
 
       {recipe.description && (
         <div className="recipe-description">
           <h2>Description</h2>
-          <div 
-            dangerouslySetInnerHTML={{ __html: recipe.description }} 
-            className="description-content"
-          />
+          <div dangerouslySetInnerHTML={{ __html: recipe.description }} className="description-content" />
         </div>
       )}
 
       <div className="recipe-ingredients">
         <h2>Ingredients</h2>
         <ul>
-          {recipe.ingredients?.map((ingredient, index) => (
-            <li key={index}>{ingredient}</li>
-          ))}
+          {Array.isArray(recipe.ingredients) ? (
+            recipe.ingredients.map((ingredient, index) => (
+              <li key={index}>{typeof ingredient === 'string' ? ingredient : JSON.stringify(ingredient)}</li>
+            ))
+          ) : (
+            <p>No ingredients available.</p>
+          )}
         </ul>
       </div>
 
       <div className="recipe-instructions">
         <h2>Instructions</h2>
         <ol>
-          {recipe.instructions?.map((step, index) => (
-            <li key={index}>{step}</li>
-          ))}
+          {Array.isArray(recipe.instructions) ? (
+            recipe.instructions.map((step, index) => (
+              <li key={index}>{typeof step === 'string' ? step : JSON.stringify(step)}</li>
+            ))
+          ) : (
+            <p>No instructions available.</p>
+          )}
         </ol>
       </div>
     </div>
