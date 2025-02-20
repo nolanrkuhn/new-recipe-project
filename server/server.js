@@ -17,15 +17,8 @@ if (!process.env.SPOONACULAR_API_KEY || !process.env.JWT_SECRET) {
     process.exit(1);
 }
 
-// Set database path: Use /data for Render, fallback to local for development
+// ✅ Use /data/database.sqlite in Render, fallback to local for development
 const dbPath = process.env.RENDER ? "/data/database.sqlite" : "./server/database.sqlite";
-
-if (process.env.RENDER) {
-    if (!fs.existsSync('/data')) {
-        fs.mkdirSync('/data'); // ❌ Render already provides /data, no need to create it!
-    }
-}
-
 
 // Initialize SQLite database
 const db = new sqlite3.Database(dbPath, (err) => {
