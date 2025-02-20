@@ -1,47 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import './index.css';
-import NavBar from './components/NavBar';
-import Login from './pages/Login';
-import Register from './pages/Register';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import RecipeSearch from './pages/RecipeSearch';
 import Favorites from './pages/Favorites';
-import RecipeDetails from './pages/RecipeDetails';
+import Login from './pages/Login';
+import NavBar from './components/NavBar';
 
 const App = () => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      axios.get(`${process.env.REACT_APP_API_URL}/me`, { 
-        headers: { Authorization: `Bearer ${token}` } 
-      })
-        .then((response) => setUser(response.data))
-        .catch(() => localStorage.removeItem('token'));
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
     }
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setUser(null);
-  };
-
   return (
     <Router>
-      <div className="app-container">
-        <NavBar user={user} handleLogout={handleLogout} />
-        <div className="container">
-          <Routes>
-            <Route path="/" element={<RecipeSearch user={user} />} />
-            <Route path="/login" element={<Login setUser={setUser} />} />
-            <Route path="/register" element={<Register setUser={setUser} />} />
-            <Route path="/favorites" element={<Favorites user={user} />} />
-            <Route path="/recipes/:id" element={<RecipeDetails user={user} />} />
-          </Routes>
-        </div>
-      </div>
+      <NavBar user={user} />
+      <Routes>
+        <Route path="/" element={<RecipeSearch user={user} />} />
+        <Route path="/favorites" element={user ? <Favorites user={user} /> : <Login setUser={setUser} />} />
+        <Route path="/login" element={<Login setUser={setUser} />} />
+      </Routes>
     </Router>
   );
 };

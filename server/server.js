@@ -72,12 +72,21 @@ app.post('/register', async (req, res) => {
         if (users.find(user => user.email === email)) {
             return res.status(400).json({ error: 'User already exists' });
         }
+
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = { id: users.length + 1, email, password: hashedPassword, name };
         users.push(newUser);
+
+        console.log('User registered:', newUser); // ✅ Debugging log
+
         const token = generateToken(newUser);
-        res.json({ message: 'User registered successfully', token, user: { id: newUser.id, email: newUser.email, name: newUser.name } });
+        res.json({ 
+            message: 'User registered successfully',
+            token,
+            user: { id: newUser.id, email: newUser.email, name: newUser.name }
+        });
     } catch (error) {
+        console.error('Registration error:', error);
         res.status(500).json({ error: 'Error during registration' });
     }
 });
@@ -86,17 +95,27 @@ app.post('/register', async (req, res) => {
 app.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
+        console.log('Attempting login for:', email); // ✅ Debugging log
+
         const user = users.find(user => user.email === email);
-        if (!user || !(await bcrypt.compare(password, user.password))) {
+        if (!user) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        console.log('Login successful for:', email); // ✅ Debugging log
+
         const token = generateToken(user);
-        res.json({ token, user: { name: user.name, email: user.email } });
+        res.json({ token, user: { id: user.id, email: user.email, name: user.name } });
     } catch (error) {
+        console.error('Login error:', error);
         res.status(500).json({ error: 'Error during login' });
     }
 });
-
 // Get Logged-in User
 app.get('/me', verifyToken, (req, res) => {
     res.json({ id: req.user.id, email: req.user.email, name: req.user.name });
