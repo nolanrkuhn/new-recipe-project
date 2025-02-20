@@ -154,11 +154,21 @@ app.delete('/favorites/:recipeId', verifyToken, (req, res) => {
     const userId = req.user.id;
     const { recipeId } = req.params;
 
-    if (favorites[userId]) {
-        favorites[userId].delete(recipeId);
+    if (!favorites[userId]) {
+        return res.status(404).json({ message: 'No favorites found for this user.' });
     }
 
-    res.json({ message: 'Recipe removed from favorites', favorites: Array.from(favorites[userId]) });
+    // Ensure recipe exists before trying to remove it
+    if (!favorites[userId].has(recipeId)) {
+        return res.status(400).json({ message: 'Recipe not found in favorites.' });
+    }
+
+    favorites[userId].delete(recipeId);
+
+    return res.json({ 
+        message: 'Recipe removed from favorites.', 
+        favorites: Array.from(favorites[userId]) 
+    });
 });
 
 // 404 Handler

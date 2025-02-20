@@ -20,7 +20,7 @@ const RecipeCard = ({ recipe, user, refreshFavorites, isFavorite }) => {
       setSuccessMessage('You must be logged in to manage favorites.');
       return;
     }
-
+  
     try {
       if (isFavorite) {
         await axios.delete(`${baseUrl}/favorites/${recipe.id}`, {
@@ -33,12 +33,17 @@ const RecipeCard = ({ recipe, user, refreshFavorites, isFavorite }) => {
         });
         setSuccessMessage('Added to Favorites! ❤️');
       }
-      if (refreshFavorites) refreshFavorites(); 
+  
+      // ✅ Correctly update the UI by calling refreshFavorites
+      if (refreshFavorites) {
+        setTimeout(refreshFavorites, 500); // Wait a moment to let backend process
+      }
     } catch (error) {
       console.error('Error updating favorite:', error);
       setSuccessMessage('Error updating favorite.');
     }
   };
+  
 
   return (
     <div className="recipe-card" onClick={handleClick} role="button" tabIndex={0}>
