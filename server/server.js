@@ -20,14 +20,14 @@ if (!process.env.SPOONACULAR_API_KEY || !process.env.JWT_SECRET) {
 // ✅ Define database file location
 const dbPath = process.env.RENDER ? "/data/database.sqlite" : "./server/database.sqlite";
 
-// ✅ Ensure the database file exists BEFORE connecting
-if (!fs.existsSync(dbPath)) {
-    console.log("⚠️ Database file not found. Creating a new one...");
-    fs.writeFileSync(dbPath, '');  // Create an empty SQLite file
+// ✅ Ensure the `/data` directory exists on Render
+if (process.env.RENDER && !fs.existsSync('/data')) {
+    fs.mkdirSync('/data', { recursive: true });
+    console.log("✅ Created /data directory for database storage.");
 }
 
-// ✅ Connect to SQLite database
-const db = new sqlite3.Database(dbPath, (err) => {
+// ✅ Connect to SQLite database, allowing it to create the file if missing
+const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
     if (err) {
         console.error('❌ Database connection error:', err.message);
         process.exit(1);
