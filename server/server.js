@@ -152,26 +152,31 @@ app.get('/favorites', verifyToken, (req, res) => {
 // Remove a favorite recipe
 app.delete('/favorites/:recipeId', verifyToken, (req, res) => {
     const userId = req.user.id;
-    const { recipeId } = req.params;
+    let { recipeId } = req.params;
 
     if (!favorites[userId]) {
         return res.status(404).json({ message: 'No favorites found for this user.' });
     }
 
-    // Ensure recipe ID is a string (Spoonacular sometimes returns numbers)
-    const formattedRecipeId = recipeId.toString();
+    // Normalize ID formats (Spoonacular sometimes returns numbers)
+    recipeId = recipeId.toString();
 
-    if (!favorites[userId].has(formattedRecipeId)) {
-        return res.status(400).json({ message: `Recipe ${formattedRecipeId} not found in favorites.` });
+    // Debugging log to see if the recipe ID exists
+    console.log(`Removing recipe ID: ${recipeId} from favorites for user: ${userId}`);
+    console.log('Current favorites:', favorites[userId]);
+
+    if (!favorites[userId].has(recipeId)) {
+        return res.status(400).json({ message: `Recipe ${recipeId} not found in favorites.` });
     }
 
-    favorites[userId].delete(formattedRecipeId);
+    favorites[userId].delete(recipeId);
 
     return res.json({ 
-        message: `Recipe ${formattedRecipeId} removed from favorites.`, 
+        message: `Recipe ${recipeId} removed from favorites.`, 
         favorites: Array.from(favorites[userId]) 
     });
 });
+
 
 
 // 404 Handler
