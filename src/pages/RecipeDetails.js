@@ -9,7 +9,7 @@ const RecipeDetails = () => {
   const [error, setError] = useState(null);
   const { id } = useParams();
   const navigate = useNavigate();
-  const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5050'; // Add this line
+  const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5050';
 
   useEffect(() => {
     const fetchRecipe = async () => {
@@ -19,7 +19,7 @@ const RecipeDetails = () => {
       
       try {
         console.log('Fetching recipe:', id);
-        console.log('API URL:', `${baseUrl}/api/recipes/${id}`); // Add this debug line
+        console.log('API URL:', `${baseUrl}/api/recipes/${id}`);
         
         const response = await axios.get(`${baseUrl}/api/recipes/${id}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
