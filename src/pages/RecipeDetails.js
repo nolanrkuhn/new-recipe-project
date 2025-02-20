@@ -16,15 +16,15 @@ const RecipeDetails = () => {
       const token = localStorage.getItem('token');
       setLoading(true);
       setError(null);
-      
+
       try {
         console.log('Fetching recipe:', id);
         console.log('API URL:', `${baseUrl}/api/recipes/${id}`);
-        
+
         const response = await axios.get(`${baseUrl}/api/recipes/${id}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
-        
+
         if (response.data) {
           console.log('Recipe data received:', response.data);
           setRecipe({
@@ -40,7 +40,7 @@ const RecipeDetails = () => {
         }
       } catch (error) {
         console.error('Error details:', error);
-        
+
         if (error.response?.status === 404) {
           setError('Recipe not found. Please check the recipe ID.');
         } else if (error.response?.status === 401) {
@@ -90,7 +90,7 @@ const RecipeDetails = () => {
       <button className="back-button" onClick={() => navigate(-1)}>
         &larr; Back to Search
       </button>
-      
+
       <div className="recipe-header">
         {recipe.image && (
           <img src={recipe.image} alt={recipe.title} className="recipe-image" />
