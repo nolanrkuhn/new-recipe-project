@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import RecipeCard from '../components/RecipeCard';
-import './RecipeSearch.css';  // Add this import
+import './RecipeSearch.css';
 
-const RecipeSearch = ({ user }) => {
+const RecipeSearch = ({ user }) => {  
   const [recipes, setRecipes] = useState([]);
   const [query, setQuery] = useState('');
   const [error, setError] = useState(null);
@@ -16,13 +16,7 @@ const RecipeSearch = ({ user }) => {
       setRecipes(response.data.results);
     } catch (error) {
       setError('Error fetching recipes');
-      console.error('Error fetching recipes', error);
-    }
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      handleSearch();
+      console.error('Error fetching recipes:', error);
     }
   };
 
@@ -33,16 +27,21 @@ const RecipeSearch = ({ user }) => {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onKeyPress={handleKeyPress}
+          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}  
           placeholder="Search for recipes..."
         />
         <button onClick={handleSearch}>Search</button>
       </div>
       {error && <p className="text-danger">{error}</p>}
+      
       <div className="recipe-list">
-        {recipes.map((recipe) => (
-          <RecipeCard key={recipe.id} recipe={recipe} />
-        ))}
+        {recipes.length > 0 ? (
+          recipes.map((recipe) => (
+            <RecipeCard key={recipe.id} recipe={recipe} user={user} />
+          ))
+        ) : (
+          <p>No recipes found. Try searching for something else.</p>
+        )}
       </div>
     </div>
   );
