@@ -18,12 +18,17 @@ if (!process.env.SPOONACULAR_API_KEY || !process.env.JWT_SECRET) {
 }
 
 // ✅ Define database file location
-const dbPath = process.env.RENDER ? "/data/database.sqlite" : "./server/database.sqlite";
+const dbPath = process.env.RENDER 
+    ? path.join(process.env.RENDER_INTERNAL_FOLDER || '/opt/render/project/src/data', 'database.sqlite') 
+    : "./server/database.sqlite";
 
-// ✅ Ensure the `/data` directory exists on Render
-if (process.env.RENDER && !fs.existsSync('/data')) {
-    fs.mkdirSync('/data', { recursive: true });
-    console.log("✅ Created /data directory for database storage.");
+// ✅ Ensure the data directory exists
+if (process.env.RENDER) {
+    const dataDir = path.dirname(dbPath);
+    if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
+        console.log(`✅ Created directory for database storage: ${dataDir}`);
+    }
 }
 
 // ✅ Connect to SQLite database, allowing it to create the file if missing
