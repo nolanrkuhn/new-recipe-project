@@ -10,8 +10,12 @@ const Login = ({ setUser }) => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    // Use the environment variable for the API base URL.
+    // Defaults to localhost for local development.
+    const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5050';
+    
     try {
-      const response = await axios.post('http://localhost:5050/login', { username, password });
+      const response = await axios.post(`${baseUrl}/login`, { username, password });
       localStorage.setItem('token', response.data.token);
       setUser(response.data.user);
       navigate('/');
