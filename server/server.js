@@ -5,6 +5,8 @@ const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
 const sqlite3 = require('sqlite3').verbose();
 const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
 
 dotenv.config();
 const app = express();
@@ -12,35 +14,45 @@ const app = express();
 // Ensure all required environment variables are set
 if (!process.env.SPOONACULAR_API_KEY || !process.env.JWT_SECRET) {
     console.error("❌ ERROR: Missing required environment variables! Please check your .env file.");
-    process.exit(1); // Stop the server if env variables are missing
+    process.exit(1);
 }
 
-const db = new sqlite3.Database('./server/database.sqlite', (err) => {
+// Set database path: Use /data for Render, fallback to local for development
+const dbPath = process.env.RENDER ? "/data/database.sqlite" : "./server/database.sqlite";
+
+// Ensure /data directory exists in Render
+if (process.env.RENDER) {
+    if (!fs.existsSync('/data')) {
+        fs.mkdirSync('/data');
+    }
+}
+
+// Initialize SQLite database
+const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.error('❌ Database connection error:', err.message);
         process.exit(1);
     }
-    console.log('✅ Connected to SQLite database');
+    console.log(`✅ Connected to SQLite database at ${dbPath}`);
 });
 
-// CORS configuration
-const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [
-    'https://recipe-project-frontend.onrender.com',
-    'http://localhost:3000'
-];
-
-const corsOptions = {
-    origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-            return callback(null, true);
-        }
-        callback(new Error('Not allowed by CORS'));
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Origin', 'Content-Type', 'Accept', 'Authorization'],
-    optionsSuccessStatus: 200
-};
+// Run migrations to ensure tables exist
+db.serialize(() => {
+    db.run(`CREATE TABLE IF NOT EXISTS Users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        name TEXT NOT NULL
+    )`);
+    db.run(`CREATE TABLE IF NOT EXISTS Favorites (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        recipe_id TEXT NOT NULL,
+        title TEXT NOT NULL,
+        image TEXT,
+        FOREIGN KEY (user_id) REFERENCES Users(id)
+    )`);
+});
 
 app.use(cors(corsOptions));
 app.use(express.json());
