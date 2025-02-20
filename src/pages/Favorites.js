@@ -38,7 +38,8 @@ const Favorites = ({ user }) => {
           <p>No favorite recipes yet.</p>
         ) : (
           favorites.map((recipe) => (
-            <RecipeCard key={recipe.id} recipe={recipe} user={user} />
+            <RecipeCard key={recipe.id} recipe={recipe} user={user} refreshFavorites={fetchFavorites} isFavorite={true} />
+
           ))
         )}
       </div>

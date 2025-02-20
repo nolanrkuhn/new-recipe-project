@@ -7,8 +7,10 @@ const RecipeSearch = ({ user }) => {
   const [recipes, setRecipes] = useState([]);
   const [query, setQuery] = useState('');
   const [error, setError] = useState(null);
+  const [searched, setSearched] = useState(false); // ✅ Tracks if a search was performed
 
   const handleSearch = async () => {
+    setSearched(true); // ✅ Mark that a search has been done
     try {
       const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/recipes`, {
         params: { query }
@@ -35,12 +37,12 @@ const RecipeSearch = ({ user }) => {
       {error && <p className="text-danger">{error}</p>}
       
       <div className="recipe-list">
-        {recipes.length > 0 ? (
+        {searched && recipes.length === 0 ? (  // ✅ Only show if user has searched
+          <p>No recipes found. Try searching for something else.</p>
+        ) : (
           recipes.map((recipe) => (
             <RecipeCard key={recipe.id} recipe={recipe} user={user} />
           ))
-        ) : (
-          <p>No recipes found. Try searching for something else.</p>
         )}
       </div>
     </div>
