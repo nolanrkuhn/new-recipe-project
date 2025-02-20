@@ -17,6 +17,31 @@ if (!process.env.SPOONACULAR_API_KEY || !process.env.JWT_SECRET) {
     process.exit(1);
 }
 
+// ✅ Define CORS Configuration BEFORE using it
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',')
+    : [
+        'https://recipe-project-frontend.onrender.com',
+        'http://localhost:3000'
+    ];
+
+const corsOptions = {
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Origin', 'Content-Type', 'Accept', 'Authorization'],
+    optionsSuccessStatus: 200
+};
+
+// ✅ Apply CORS Middleware AFTER defining `corsOptions`
+app.use(cors(corsOptions));
+app.use(express.json());
+
 // ✅ Use /data/database.sqlite in Render, fallback to local for development
 const dbPath = process.env.RENDER ? "/data/database.sqlite" : "./server/database.sqlite";
 
