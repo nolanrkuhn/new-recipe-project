@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './RecipeCard.css';
 
-const RecipeCard = ({ recipe }) => {
+const RecipeCard = ({ recipe, user, addFavorite }) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
@@ -39,22 +39,24 @@ const RecipeCard = ({ recipe }) => {
         <h3>{recipe.title}</h3>
         {recipe.summary && (
           <p className="recipe-summary">
-            {recipe.summary
-              .replace(/<[^>]*>/g, '')
-              .slice(0, 150)}
+            {recipe.summary.replace(/<[^>]*>/g, '').slice(0, 150)}
             {recipe.summary.length > 150 && '...'}
           </p>
         )}
       </div>
       <div className="recipe-card-footer">
-        <span>
-          <i className="far fa-clock"></i>
-          {recipe.readyInMinutes ? `${recipe.readyInMinutes} mins` : 'Time N/A'}
-        </span>
-        <span>
-          <i className="fas fa-users"></i>
-          {recipe.servings ? `Serves ${recipe.servings}` : 'Servings N/A'}
-        </span>
+        {/* Add "Add to Favorites" button only if user is logged in */}
+        {user && (
+          <button 
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent card click from triggering navigation
+              addFavorite(recipe.id);
+            }} 
+            className="btn btn-secondary"
+          >
+            Add to Favorites
+          </button>
+        )}
       </div>
     </div>
   );
