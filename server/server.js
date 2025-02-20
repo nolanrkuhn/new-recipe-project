@@ -11,13 +11,21 @@ const path = require('path');
 dotenv.config();
 const app = express();
 
+// Define CORS options
+const corsOptions = {
+    origin: process.env.FRONTEND_URL || '*', // Allow requests from frontend URL or all origins in development
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+};
+
 // Ensure all required environment variables are set
 if (!process.env.SPOONACULAR_API_KEY || !process.env.JWT_SECRET) {
     console.error("❌ ERROR: Missing required environment variables! Please check your .env file.");
     process.exit(1);
 }
 
-// ✅ Define database file location
+// ✅ Define database file location using Render's writable directory
 const dbPath = process.env.RENDER 
     ? path.join(process.env.RENDER_INTERNAL_FOLDER || '/opt/render/project/src/data', 'database.sqlite') 
     : "./server/database.sqlite";
