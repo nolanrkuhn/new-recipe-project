@@ -1,16 +1,16 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://recipe-project-backend-enn6.onrender.com'
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5050',
 });
 
-export const login = async (username, password) => {
-  const response = await api.post('/login', { username, password });
+export const login = async (email, password) => {
+  const response = await api.post('/login', { email, password });
   return response.data;
 };
 
-export const register = async (username, password) => {
-  const response = await api.post('/register', { username, password });
+export const register = async (email, password, name) => {
+  const response = await api.post('/register', { email, password, name });
   return response.data;
 };
 
@@ -21,12 +21,30 @@ export const fetchRecipes = async (query) => {
 
 export const fetchFavorites = async (token) => {
   const response = await api.get('/favorites', {
-    headers: { Authorization: `Bearer ${token}` }
+    headers: { Authorization: `Bearer ${token}` },
   });
   return response.data;
 };
 
 export const fetchRecipeDetails = async (id) => {
   const response = await api.get(`/api/recipes/${id}`);
+  return response.data;
+};
+
+export const addFavorite = async (recipeId, token) => {
+  const response = await api.post(
+    '/favorites',
+    { recipeId },
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+  return response.data;
+};
+
+export const removeFavorite = async (recipeId, token) => {
+  const response = await api.delete(`/favorites/${recipeId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
   return response.data;
 };

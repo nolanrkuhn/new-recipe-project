@@ -2,32 +2,45 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import RecipeCard from '../components/RecipeCard';
 
-const Favorites = () => {
+const Favorites = ({ user }) => {
   const [favorites, setFavorites] = useState([]);
+  const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5050';
 
   useEffect(() => {
-    const fetchFavorites = async () => {
-      const token = localStorage.getItem('token');
-      try {
-        const response = await axios.get('http://localhost:5050/favorites', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setFavorites(response.data.favorites);
-      } catch (error) {
-        console.error('Error fetching favorites', error);
-      }
-    };
+    if (user) fetchFavorites();
+  }, [user]);
 
-    fetchFavorites();
-  }, []);
+  const fetchFavorites = async () => {
+    try {
+      const response = await axios.get(`${baseUrl}/favorites`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      // Fetch full recipe details for each favorite recipe ID
+      const recipeDetails = await Promise.all(
+        response.data.favorites.map(async (id) => {
+          const recipeResponse = await axios.get(`${baseUrl}/api/recipes/${id}`);
+          return recipeResponse.data;
+        })
+      );
+
+      setFavorites(recipeDetails);
+    } catch (error) {
+      console.error('Error fetching favorites:', error);
+    }
+  };
 
   return (
     <div>
       <h2>Your Favorite Recipes</h2>
       <div className="recipe-list">
-        {favorites.map((recipe) => (
-          <RecipeCard key={recipe.id} recipe={recipe} />
-        ))}
+        {favorites.length === 0 ? (
+          <p>No favorite recipes yet.</p>
+        ) : (
+          favorites.map((recipe) => (
+            <RecipeCard key={recipe.id} recipe={recipe} user={user} />
+          ))
+        )}
       </div>
     </div>
   );
