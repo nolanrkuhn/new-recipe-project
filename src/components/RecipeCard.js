@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './RecipeCard.css';
@@ -6,6 +6,7 @@ import './RecipeCard.css';
 const RecipeCard = ({ recipe, user, refreshFavorites }) => {
   const navigate = useNavigate();
   const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5050';
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleClick = () => {
     if (recipe?.id) {
@@ -16,7 +17,7 @@ const RecipeCard = ({ recipe, user, refreshFavorites }) => {
   const addFavorite = async (e) => {
     e.stopPropagation(); // Prevents navigating to the recipe when clicking the button
     if (!user) {
-      alert('You must be logged in to add favorites.');
+      setSuccessMessage('You must be logged in to add favorites.');
       return;
     }
 
@@ -24,10 +25,12 @@ const RecipeCard = ({ recipe, user, refreshFavorites }) => {
       await axios.post(`${baseUrl}/favorites`, { recipeId: recipe.id }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      alert('Recipe added to favorites!');
-      refreshFavorites(); // Refresh favorite list after adding
+
+      setSuccessMessage('Added to Favorites! ❤️'); // ✅ Show success message
+      if (refreshFavorites) refreshFavorites(); // ✅ Only call if defined
     } catch (error) {
       console.error('Error adding favorite:', error);
+      setSuccessMessage('Error adding favorite.');
     }
   };
 
@@ -37,11 +40,7 @@ const RecipeCard = ({ recipe, user, refreshFavorites }) => {
       onClick={handleClick} 
       role="button" 
       tabIndex={0}
-      onKeyPress={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          handleClick();
-        }
-      }}
+      onKeyDown={(e) => e.key === 'Enter' && handleClick()}
     >
       {recipe.image && (
         <img 
@@ -60,6 +59,9 @@ const RecipeCard = ({ recipe, user, refreshFavorites }) => {
           </button>
         )}
       </div>
+
+      {/* ✅ Show success message below the button */}
+      {successMessage && <p className="success-message">{successMessage}</p>}
     </div>
   );
 };
