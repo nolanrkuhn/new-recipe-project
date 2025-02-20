@@ -1,9 +1,11 @@
 import React from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './RecipeCard.css';
 
-const RecipeCard = ({ recipe, user, addFavorite }) => {
+const RecipeCard = ({ recipe, user, refreshFavorites }) => {
   const navigate = useNavigate();
+  const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5050';
 
   const handleClick = () => {
     if (recipe?.id) {
@@ -11,7 +13,23 @@ const RecipeCard = ({ recipe, user, addFavorite }) => {
     }
   };
 
-  if (!recipe) return null;
+  const addFavorite = async (e) => {
+    e.stopPropagation(); // Prevents navigating to the recipe when clicking the button
+    if (!user) {
+      alert('You must be logged in to add favorites.');
+      return;
+    }
+
+    try {
+      await axios.post(`${baseUrl}/favorites`, { recipeId: recipe.id }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      alert('Recipe added to favorites!');
+      refreshFavorites(); // Refresh favorite list after adding
+    } catch (error) {
+      console.error('Error adding favorite:', error);
+    }
+  };
 
   return (
     <div 
@@ -29,32 +47,16 @@ const RecipeCard = ({ recipe, user, addFavorite }) => {
         <img 
           src={recipe.image} 
           alt={recipe.title}
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = '/placeholder-recipe.jpg';
-          }}
+          onError={(e) => { e.target.src = '/placeholder-recipe.jpg'; }}
         />
       )}
       <div className="recipe-card-content">
         <h3>{recipe.title}</h3>
-        {recipe.summary && (
-          <p className="recipe-summary">
-            {recipe.summary.replace(/<[^>]*>/g, '').slice(0, 150)}
-            {recipe.summary.length > 150 && '...'}
-          </p>
-        )}
       </div>
       <div className="recipe-card-footer">
-        {/* Add "Add to Favorites" button only if user is logged in */}
         {user && (
-          <button 
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent card click from triggering navigation
-              addFavorite(recipe.id);
-            }} 
-            className="btn btn-secondary"
-          >
-            Add to Favorites
+          <button onClick={addFavorite} className="btn btn-secondary">
+            Add to Favorites ❤️
           </button>
         )}
       </div>
