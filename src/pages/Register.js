@@ -15,8 +15,13 @@ const Register = ({ setUser }) => {
       setError("Passwords don't match");
       return;
     }
+    
+    // Use the environment variable for the API base URL.
+    // If REACT_APP_API_URL is not set, default to localhost for local development.
+    const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5050';
+    
     try {
-      const response = await axios.post('http://localhost:5050/register', { username, password });
+      const response = await axios.post(`${baseUrl}/register`, { username, password });
       localStorage.setItem('token', response.data.token);
       setUser(response.data.user);
       navigate('/');
