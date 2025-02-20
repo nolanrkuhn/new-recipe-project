@@ -9,6 +9,7 @@ const RecipeDetails = () => {
   const [error, setError] = useState(null);
   const { id } = useParams();
   const navigate = useNavigate();
+  const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5050'; // Add this line
 
   useEffect(() => {
     const fetchRecipe = async () => {
@@ -18,13 +19,22 @@ const RecipeDetails = () => {
       
       try {
         console.log('Fetching recipe:', id);
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/recipes/${id}`, {
+        console.log('API URL:', `${baseUrl}/api/recipes/${id}`); // Add this debug line
+        
+        const response = await axios.get(`${baseUrl}/api/recipes/${id}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
         
         if (response.data) {
           console.log('Recipe data received:', response.data);
-          setRecipe(response.data);
+          setRecipe({
+            ...response.data,
+            cookTime: response.data.readyInMinutes ? `${response.data.readyInMinutes} minutes` : 'Not specified',
+            difficulty: response.data.spoonacularScore ? `${response.data.spoonacularScore}/100` : 'Not specified',
+            servings: response.data.servings || 'Not specified',
+            description: response.data.summary || '',
+            extendedIngredients: response.data.extendedIngredients || []
+          });
         } else {
           throw new Error('No recipe data received');
         }
@@ -49,7 +59,7 @@ const RecipeDetails = () => {
     if (id) {
       fetchRecipe();
     }
-  }, [id, navigate]);
+  }, [id, navigate, baseUrl]);
 
   if (loading) return <div className="loading">Loading...</div>;
   if (error) return (
@@ -69,13 +79,11 @@ const RecipeDetails = () => {
     </div>
   );
 
-  const ingredientsList = Array.isArray(recipe.ingredients)
-    ? recipe.ingredients
-    : recipe.extendedIngredients?.map(ing => `${ing.amount} ${ing.unit} ${ing.name}`) || [];
+  const ingredientsList = recipe.extendedIngredients?.map(ing => 
+    `${ing.amount} ${ing.unit} ${ing.name}`
+  ) || [];
 
-  const instructionsList = Array.isArray(recipe.instructions)
-    ? recipe.instructions
-    : recipe.analyzedInstructions?.[0]?.steps.map(step => step.step) || [];
+  const instructionsList = recipe.analyzedInstructions?.[0]?.steps?.map(step => step.step) || [];
 
   return (
     <div className="recipe-details">
@@ -91,9 +99,15 @@ const RecipeDetails = () => {
       </div>
 
       <div className="recipe-info">
-        <div className="info-item"><span className="label">Cook Time:</span> {recipe.cookTime || 'Not specified'}</div>
-        <div className="info-item"><span className="label">Difficulty:</span> {recipe.difficulty || 'Not specified'}</div>
-        <div className="info-item"><span className="label">Servings:</span> {recipe.servings || 'Not specified'}</div>
+        <div className="info-item">
+          <span className="label">Cook Time:</span> {recipe.cookTime}
+        </div>
+        <div className="info-item">
+          <span className="label">Difficulty:</span> {recipe.difficulty}
+        </div>
+        <div className="info-item">
+          <span className="label">Servings:</span> {recipe.servings}
+        </div>
       </div>
 
       {recipe.description && (
