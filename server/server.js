@@ -158,18 +158,21 @@ app.delete('/favorites/:recipeId', verifyToken, (req, res) => {
         return res.status(404).json({ message: 'No favorites found for this user.' });
     }
 
-    // Ensure recipe exists before trying to remove it
-    if (!favorites[userId].has(recipeId)) {
-        return res.status(400).json({ message: 'Recipe not found in favorites.' });
+    // Ensure recipe ID is a string (Spoonacular sometimes returns numbers)
+    const formattedRecipeId = recipeId.toString();
+
+    if (!favorites[userId].has(formattedRecipeId)) {
+        return res.status(400).json({ message: `Recipe ${formattedRecipeId} not found in favorites.` });
     }
 
-    favorites[userId].delete(recipeId);
+    favorites[userId].delete(formattedRecipeId);
 
     return res.json({ 
-        message: 'Recipe removed from favorites.', 
+        message: `Recipe ${formattedRecipeId} removed from favorites.`, 
         favorites: Array.from(favorites[userId]) 
     });
 });
+
 
 // 404 Handler
 app.use((req, res) => {

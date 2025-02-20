@@ -22,30 +22,30 @@ const RecipeCard = ({ recipe, user, refreshFavorites, isFavorite }) => {
     }
   
     try {
+      const formattedRecipeId = recipe.id.toString(); // ✅ Ensure ID is always a string
+  
       if (isFavorite) {
-        await axios.delete(`${baseUrl}/favorites/${recipe.id}`, {
+        await axios.delete(`${baseUrl}/favorites/${formattedRecipeId}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
-        setSuccessMessage('Removed from Favorites ❌');
+        setSuccessMessage(`Removed from Favorites ❌`);
       } else {
-        await axios.post(`${baseUrl}/favorites`, { recipeId: recipe.id }, {
+        await axios.post(`${baseUrl}/favorites`, { recipeId: formattedRecipeId }, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
-        setSuccessMessage('Added to Favorites! ❤️');
+        setSuccessMessage(`Added to Favorites! ❤️`);
       }
   
-      // ✅ Correctly update the UI by calling refreshFavorites
       if (refreshFavorites) {
-        setTimeout(refreshFavorites, 500); // Wait a moment to let backend process
+        setTimeout(refreshFavorites, 500); // ✅ Ensures state updates
       }
     } catch (error) {
       console.error('Error updating favorite:', error);
-      setSuccessMessage('Error updating favorite.');
+      setSuccessMessage(`Error updating favorite.`);
     }
   };
   
-
-  return (
+    return (
     <div className="recipe-card" onClick={handleClick} role="button" tabIndex={0}>
       {recipe.image && <img src={recipe.image} alt={recipe.title} />}
       <div className="recipe-card-content">
