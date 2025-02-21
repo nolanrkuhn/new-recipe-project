@@ -16,19 +16,22 @@ const RecipeDetails = () => {
       const token = localStorage.getItem('token');
       setLoading(true);
       setError(null);
-
+  
       try {
         console.log('Fetching recipe:', id);
         console.log('API URL:', `${baseUrl}/api/recipes/${id}`);
-
+  
         const response = await axios.get(`${baseUrl}/api/recipes/${id}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
-
+  
+        console.log('Full API Response:', response);
+  
         if (response.data) {
           console.log('Recipe data received:', response.data);
           setRecipe(response.data);
         } else {
+          console.log('No data received from API.');
           setRecipe(null);
         }
       } catch (error) {
@@ -38,9 +41,10 @@ const RecipeDetails = () => {
         setLoading(false);
       }
     };
-
+  
     fetchRecipe();
   }, [id, baseUrl]);
+  
 
   if (loading) return <p>Loading recipe...</p>;
   if (error) return <p>Error loading recipe: {error}</p>;
