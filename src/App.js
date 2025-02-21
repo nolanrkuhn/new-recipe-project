@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import axios from 'axios';
+import './index.css';
 import RecipeSearch from './pages/RecipeSearch';
 import Favorites from './pages/Favorites';
 import Login from './pages/Login';
@@ -11,28 +13,35 @@ const App = () => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    const token = localStorage.getItem('token');
+    if (token) {
+      axios.get(`${process.env.REACT_APP_API_URL}/me`, { 
+        headers: { Authorization: `Bearer ${token}` } 
+      })
+        .then((response) => setUser(response.data))
+        .catch(() => localStorage.removeItem('token'));
     }
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('user');
     setUser(null);
   };
 
   return (
     <Router>
-      <NavBar user={user} handleLogout={handleLogout} />  {/* ✅ Pass handleLogout to NavBar */}
-      <Routes>
-        <Route path="/" element={<RecipeSearch user={user} />} />
-        <Route path="/favorites" element={user ? <Favorites user={user} /> : <Login setUser={setUser} />} />
-        <Route path="/login" element={<Login setUser={setUser} />} />
-        <Route path="/register" element={<Register setUser={setUser} />} />
-        <Route path="/recipes/:id" element={<RecipeDetails user={user} />} />
-      </Routes>
+      <div className="app-container">
+        <NavBar user={user} handleLogout={handleLogout} />
+        <div className="container">
+          <Routes>
+            <Route path="/" element={<RecipeSearch user={user} />} />
+            <Route path="/login" element={<Login setUser={setUser} />} />
+            <Route path="/register" element={<Register setUser={setUser} />} />
+            <Route path="/favorites" element={user ? <Favorites user={user} /> : <Login setUser={setUser} />} />
+            <Route path="/recipes/:id" element={<RecipeDetails user={user} />} />
+          </Routes>
+        </div>
+      </div>
     </Router>
   );
 };
