@@ -10,7 +10,10 @@ const RecipeDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5050';
-  const apiKey = process.env.SPOONACULAR_API_KEY; // ✅ Using correct API key variable
+  const apiKey = process.env.REACT_APP_SPOONACULAR_API_KEY;
+  
+  console.log('Spoonacular API Key:', apiKey);
+
 
   console.log('Recipe ID from URL:', id);
 
