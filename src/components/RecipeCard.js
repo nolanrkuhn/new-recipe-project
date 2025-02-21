@@ -7,21 +7,10 @@ const RecipeCard = ({ recipe, user, refreshFavorites, isFavorite }) => {
   const navigate = useNavigate();
   const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5050';
   const [successMessage, setSuccessMessage] = useState('');
-  const [error, setError] = useState('');
 
-  const handleClick = async () => {
+  const handleClick = () => {
     if (recipe?.id) {
-      try {
-        // Verify the recipe exists before navigation
-        const response = await axios.get(`${baseUrl}/api/recipes/${recipe.id}`);
-        if (response.data) {
-          navigate(`/recipes/${recipe.id}`);
-        }
-      } catch (err) {
-        console.error('Error fetching recipe:', err);
-        setError('Unable to load recipe details. Please try again later.');
-        setTimeout(() => setError(''), 3000); // Clear error after 3 seconds
-      }
+      navigate(`/recipes/${recipe.id}`);
     }
   };
 
@@ -33,7 +22,7 @@ const RecipeCard = ({ recipe, user, refreshFavorites, isFavorite }) => {
     }
   
     try {
-      const formattedRecipeId = recipe.id.toString();
+      const formattedRecipeId = recipe.id.toString(); // ✅ Ensure ID is always a string
   
       if (isFavorite) {
         await axios.delete(`${baseUrl}/favorites/${formattedRecipeId}`, {
@@ -41,18 +30,14 @@ const RecipeCard = ({ recipe, user, refreshFavorites, isFavorite }) => {
         });
         setSuccessMessage(`Removed from Favorites ❌`);
       } else {
-        await axios.post(`${baseUrl}/favorites`, {
-          recipeId: formattedRecipeId,
-          title: recipe.title,
-          image: recipe.image
-        }, {
+        await axios.post(`${baseUrl}/favorites`, { recipeId: formattedRecipeId }, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
         setSuccessMessage(`Added to Favorites! ❤️`);
       }
   
       if (refreshFavorites) {
-        setTimeout(refreshFavorites, 500);
+        setTimeout(refreshFavorites, 500); // ✅ Ensures state updates
       }
     } catch (error) {
       console.error('Error updating favorite:', error);
@@ -60,7 +45,7 @@ const RecipeCard = ({ recipe, user, refreshFavorites, isFavorite }) => {
     }
   };
   
-  return (
+    return (
     <div className="recipe-card" onClick={handleClick} role="button" tabIndex={0}>
       {recipe.image && <img src={recipe.image} alt={recipe.title} />}
       <div className="recipe-card-content">
@@ -74,9 +59,9 @@ const RecipeCard = ({ recipe, user, refreshFavorites, isFavorite }) => {
         )}
       </div>
       {successMessage && <p className="success-message">{successMessage}</p>}
-      {error && <p className="error-message">{error}</p>}
     </div>
   );
 };
+
 
 export default RecipeCard;

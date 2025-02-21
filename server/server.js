@@ -3,74 +3,42 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
-const sqlite3 = require('sqlite3').verbose();
 const axios = require('axios');
-const fs = require('fs');
-const path = require('path');
 
 dotenv.config();
 const app = express();
 
-// Define CORS options
+// Parse ALLOWED_ORIGINS from environment variable or use defaults
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+    ? process.env.ALLOWED_ORIGINS.split(',')
+    : [
+        'https://recipe-project-frontend.onrender.com',
+        'http://localhost:3000'
+      ];
+
+// CORS configuration
 const corsOptions = {
-    origin: process.env.FRONTEND_URL || '*', // Allow requests from frontend URL or all origins in development
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
+    allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
+    optionsSuccessStatus: 200
 };
 
-// Ensure all required environment variables are set
-if (!process.env.REACT_APP_SPOONACULAR_API_KEY || !process.env.JWT_SECRET) {
-    console.error("❌ ERROR: Missing required environment variables! Please check your .env file.");
-    process.exit(1);
-}
-
-
-// ✅ Define database file location using Render's writable directory
-const dbPath = process.env.RENDER 
-    ? path.join(process.env.RENDER_INTERNAL_FOLDER || '/opt/render/project/src/data', 'database.sqlite') 
-    : "./server/database.sqlite";
-
-// ✅ Ensure the data directory exists
-if (process.env.RENDER) {
-    const dataDir = path.dirname(dbPath);
-    if (!fs.existsSync(dataDir)) {
-        fs.mkdirSync(dataDir, { recursive: true });
-        console.log(`✅ Created directory for database storage: ${dataDir}`);
-    }
-}
-
-// ✅ Connect to SQLite database, allowing it to create the file if missing
-const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
-    if (err) {
-        console.error('❌ Database connection error:', err.message);
-        process.exit(1);
-    }
-    console.log(`✅ Connected to SQLite database at ${dbPath}`);
-});
-
-// ✅ Run migrations to ensure tables exist
-db.serialize(() => {
-    db.run(`CREATE TABLE IF NOT EXISTS Users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        name TEXT NOT NULL
-    )`);
-    db.run(`CREATE TABLE IF NOT EXISTS Favorites (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        recipe_id TEXT NOT NULL,
-        title TEXT NOT NULL,
-        image TEXT,
-        FOREIGN KEY (user_id) REFERENCES Users(id)
-    )`);
-});
-
+// Apply middleware
 app.use(cors(corsOptions));
 app.use(express.json());
 
 const SPOONACULAR_API_KEY = process.env.SPOONACULAR_API_KEY;
+const SPOONACULAR_URL = 'https://api.spoonacular.com/recipes';
+
+const users = []; // Temporary user storage (Replace with a DB)
+const favorites = {}; // Temporary favorites storage (Replace with a DB)
 
 // Generate JWT token
 const generateToken = (user) => {
@@ -80,72 +48,89 @@ const generateToken = (user) => {
 // Middleware to verify authentication
 const verifyToken = (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'Access denied. No token provided.' });
+    if (!token) {
+        return res.status(401).json({ error: 'Access denied. No token provided.' });
+    }
     try {
-        req.user = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded;
         next();
     } catch (error) {
         return res.status(403).json({ error: 'Invalid or expired token.' });
     }
 };
 
-// User Registration (SQLite)
+// Health Check
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString(), environment: process.env.NODE_ENV });
+});
+
+// User Registration
 app.post('/register', async (req, res) => {
     try {
         const { email, password, name } = req.body;
-        db.get("SELECT * FROM Users WHERE email = ?", [email], async (err, user) => {
-            if (user) return res.status(400).json({ error: 'User already exists' });
+        if (users.find(user => user.email === email)) {
+            return res.status(400).json({ error: 'User already exists' });
+        }
 
-            const hashedPassword = await bcrypt.hash(password, 10);
-            db.run("INSERT INTO Users (email, password, name) VALUES (?, ?, ?)", [email, hashedPassword, name], function (err) {
-                if (err) return res.status(500).json({ error: 'Database error' });
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = { id: users.length + 1, email, password: hashedPassword, name };
+        users.push(newUser);
 
-                const newUser = { id: this.lastID, email, name };
-                const token = generateToken(newUser);
-                res.json({ message: 'User registered successfully', token, user: newUser });
-            });
+        console.log('User registered:', newUser); // ✅ Debugging log
+
+        const token = generateToken(newUser);
+        res.json({ 
+            message: 'User registered successfully',
+            token,
+            user: { id: newUser.id, email: newUser.email, name: newUser.name }
         });
     } catch (error) {
-        res.status(500).json({ error: 'Registration error' });
+        console.error('Registration error:', error);
+        res.status(500).json({ error: 'Error during registration' });
     }
 });
 
-// User Login (SQLite)
+// User Login
 app.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
-        db.get("SELECT * FROM Users WHERE email = ?", [email], async (err, user) => {
-            if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+        console.log('Attempting login for:', email); // ✅ Debugging log
 
-            const isPasswordValid = await bcrypt.compare(password, user.password);
-            if (!isPasswordValid) return res.status(401).json({ error: 'Invalid credentials' });
+        const user = users.find(user => user.email === email);
+        if (!user) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
 
-            const token = generateToken(user);
-            res.json({ token, user: { id: user.id, email: user.email, name: user.name } });
-        });
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        console.log('Login successful for:', email); // ✅ Debugging log
+
+        const token = generateToken(user);
+        res.json({ token, user: { id: user.id, email: user.email, name: user.name } });
     } catch (error) {
-        res.status(500).json({ error: 'Login error' });
+        console.error('Login error:', error);
+        res.status(500).json({ error: 'Error during login' });
     }
 });
-
 // Get Logged-in User
 app.get('/me', verifyToken, (req, res) => {
-    db.get("SELECT id, email, name FROM Users WHERE id = ?", [req.user.id], (err, user) => {
-        if (!user) return res.status(401).json({ error: 'User not found' });
-        res.json(user);
-    });
+    res.json({ id: req.user.id, email: req.user.email, name: req.user.name });
 });
 
-// Get Recipes from Spoonacular API
+// Search Recipes
 app.get('/api/recipes', async (req, res) => {
     try {
-        const { query } = req.query;
-        const response = await axios.get(`https://api.spoonacular.com/recipes/complexSearch`, {
-            params: { query, number: 10, apiKey: SPOONACULAR_API_KEY }
+        const { query, number, diet, cuisine } = req.query;
+        const response = await axios.get(`${SPOONACULAR_URL}/complexSearch`, {
+            params: { query, number, diet, cuisine, apiKey: SPOONACULAR_API_KEY }
         });
         res.json(response.data);
     } catch (error) {
-        res.status(500).json({ error: 'Error fetching recipes', details: error.message });
+        res.status(500).json({ error: 'Error fetching recipes' });
     }
 });
 
@@ -153,44 +138,78 @@ app.get('/api/recipes', async (req, res) => {
 app.get('/api/recipes/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const response = await axios.get(`https://api.spoonacular.com/recipes/${id}/information`, {
+        const response = await axios.get(`${SPOONACULAR_URL}/${id}/information`, {
             params: { apiKey: SPOONACULAR_API_KEY }
         });
         res.json(response.data);
     } catch (error) {
-        res.status(500).json({ error: 'Error fetching recipe details', details: error.message });
+        res.status(500).json({ error: 'Error fetching recipe details' });
     }
 });
 
-// Manage Favorites
+// ===== FAVORITES FEATURE ===== //
+
+// Add a favorite recipe
 app.post('/favorites', verifyToken, (req, res) => {
-    const { recipeId, title, image } = req.body;
-    db.run("INSERT INTO Favorites (user_id, recipe_id, title, image) VALUES (?, ?, ?, ?)", 
-        [req.user.id, recipeId, title, image], 
-        function (err) {
-            if (err) return res.status(500).json({ error: 'Database error' });
-            res.json({ message: 'Recipe added to favorites' });
-        });
+    const userId = req.user.id;
+    const { recipeId } = req.body;
+
+    if (!favorites[userId]) {
+        favorites[userId] = new Set();
+    }
+
+    favorites[userId].add(recipeId);
+    res.json({ message: 'Recipe added to favorites', favorites: Array.from(favorites[userId]) });
 });
 
+// Get user's favorite recipes
 app.get('/favorites', verifyToken, (req, res) => {
-    db.all("SELECT * FROM Favorites WHERE user_id = ?", [req.user.id], (err, rows) => {
-        if (err) return res.status(500).json({ error: 'Database error' });
-        res.json(rows);
+    const userId = req.user.id;
+    res.json({ favorites: favorites[userId] ? Array.from(favorites[userId]) : [] });
+});
+
+// Remove a favorite recipe
+app.delete('/favorites/:recipeId', verifyToken, (req, res) => {
+    const userId = req.user.id;
+    let { recipeId } = req.params;
+
+    if (!favorites[userId]) {
+        return res.status(404).json({ message: 'No favorites found for this user.' });
+    }
+
+    // Normalize ID formats (Spoonacular sometimes returns numbers)
+    recipeId = recipeId.toString();
+
+    // Debugging log to see if the recipe ID exists
+    console.log(`Removing recipe ID: ${recipeId} from favorites for user: ${userId}`);
+    console.log('Current favorites:', favorites[userId]);
+
+    if (!favorites[userId].has(recipeId)) {
+        return res.status(400).json({ message: `Recipe ${recipeId} not found in favorites.` });
+    }
+
+    favorites[userId].delete(recipeId);
+
+    return res.json({ 
+        message: `Recipe ${recipeId} removed from favorites.`, 
+        favorites: Array.from(favorites[userId]) 
     });
 });
 
-app.delete('/favorites/:recipeId', verifyToken, (req, res) => {
-    db.run("DELETE FROM Favorites WHERE user_id = ? AND recipe_id = ?", 
-        [req.user.id, req.params.recipeId], 
-        function (err) {
-            if (err) return res.status(500).json({ error: 'Database error' });
-            res.json({ message: 'Recipe removed from favorites' });
-        });
+
+
+// 404 Handler
+app.use((req, res) => {
+    res.status(404).json({ error: `Cannot ${req.method} ${req.path}` });
+});
+
+// Error Handler
+app.use((err, req, res, next) => {
+    res.status(500).json({ error: 'Internal Server Error' });
 });
 
 // Start Server
 const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => {
-    console.log(`✅ Server running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });

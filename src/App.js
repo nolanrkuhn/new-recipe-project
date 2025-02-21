@@ -4,7 +4,6 @@ import RecipeSearch from './pages/RecipeSearch';
 import Favorites from './pages/Favorites';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import RecipeDetails from './pages/RecipeDetails';  // ✅ Import RecipeDetails
 import NavBar from './components/NavBar';
 
 const App = () => {
@@ -25,19 +24,15 @@ const App = () => {
 
   return (
     <Router>
-      <NavBar user={user} handleLogout={handleLogout} />
+      <NavBar user={user} handleLogout={handleLogout} />  {/* ✅ Pass handleLogout to NavBar */}
       <Routes>
         <Route path="/" element={<RecipeSearch user={user} />} />
         <Route path="/favorites" element={user ? <Favorites user={user} /> : <Login setUser={setUser} />} />
         <Route path="/login" element={<Login setUser={setUser} />} />
         <Route path="/register" element={<Register setUser={setUser} />} />
-
-        {/* ✅ Add RecipeDetails Route */}
-        <Route path="/recipes/:id" element={<RecipeDetails />} />
       </Routes>
     </Router>
   );
 };
 
 export default App;
-
