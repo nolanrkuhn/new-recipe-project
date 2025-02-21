@@ -5,6 +5,7 @@ import Favorites from './pages/Favorites';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import NavBar from './components/NavBar';
+import RecipeDetails from './pages/RecipeDetails';
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -30,6 +31,7 @@ const App = () => {
         <Route path="/favorites" element={user ? <Favorites user={user} /> : <Login setUser={setUser} />} />
         <Route path="/login" element={<Login setUser={setUser} />} />
         <Route path="/register" element={<Register setUser={setUser} />} />
+        <Route path="/recipes/:id" element={<RecipeDetails user={user} />} />
       </Routes>
     </Router>
   );
