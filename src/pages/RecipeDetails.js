@@ -11,6 +11,8 @@ const RecipeDetails = () => {
   const navigate = useNavigate();
   const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5050';
 
+  console.log('Recipe ID from URL:', id);
+
   useEffect(() => {
     const fetchRecipe = async () => {
       const token = localStorage.getItem('token');
