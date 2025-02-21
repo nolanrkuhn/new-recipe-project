@@ -20,10 +20,11 @@ const corsOptions = {
 };
 
 // Ensure all required environment variables are set
-if (!process.env.SPOONACULAR_API_KEY || !process.env.JWT_SECRET) {
+if (!process.env.REACT_APP_SPOONACULAR_API_KEY || !process.env.JWT_SECRET) {
     console.error("❌ ERROR: Missing required environment variables! Please check your .env file.");
     process.exit(1);
 }
+
 
 // ✅ Define database file location using Render's writable directory
 const dbPath = process.env.RENDER 
