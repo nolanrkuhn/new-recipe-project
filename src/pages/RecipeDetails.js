@@ -10,27 +10,28 @@ const RecipeDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5050';
+  const apiKey = process.env.SPOONACULAR_API_KEY; // ✅ Using correct API key variable
 
   console.log('Recipe ID from URL:', id);
 
   useEffect(() => {
     const fetchRecipe = async () => {
-      const token = localStorage.getItem('token'); // Only needed if the API requires authentication
+      const token = localStorage.getItem('token');
       setLoading(true);
       setError(null);
-    
+
       try {
         console.log('Fetching recipe:', id);
         console.log('API URL:', `https://api.spoonacular.com/recipes/${id}/information`);
-    
+
         const response = await axios.get(`https://api.spoonacular.com/recipes/${id}/information`, {
           params: {
-            apiKey: process.env.REACT_APP_SPOONACULAR_API_KEY,  // Ensure your API key is used
+            apiKey: apiKey,  // ✅ Pass correct API key
           },
         });
-    
+
         console.log('Full API Response:', response);
-    
+
         if (response.data) {
           setRecipe(response.data);
         } else {
@@ -43,11 +44,9 @@ const RecipeDetails = () => {
         setLoading(false);
       }
     };
-    
-  
+
     fetchRecipe();
-  }, [id, baseUrl]);
-  
+  }, [id, apiKey]);
 
   if (loading) return <p>Loading recipe...</p>;
   if (error) return <p>Error loading recipe: {error}</p>;
