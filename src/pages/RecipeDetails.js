@@ -15,25 +15,25 @@ const RecipeDetails = () => {
 
   useEffect(() => {
     const fetchRecipe = async () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('token'); // Only needed if the API requires authentication
       setLoading(true);
       setError(null);
-  
+    
       try {
         console.log('Fetching recipe:', id);
-        console.log('API URL:', `${baseUrl}/api/recipes/${id}`);
-  
-        const response = await axios.get(`${baseUrl}/api/recipes/${id}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        console.log('API URL:', `https://api.spoonacular.com/recipes/${id}/information`);
+    
+        const response = await axios.get(`https://api.spoonacular.com/recipes/${id}/information`, {
+          params: {
+            apiKey: process.env.REACT_APP_SPOONACULAR_API_KEY,  // Ensure your API key is used
+          },
         });
-  
+    
         console.log('Full API Response:', response);
-  
+    
         if (response.data) {
-          console.log('Recipe data received:', response.data);
           setRecipe(response.data);
         } else {
-          console.log('No data received from API.');
           setRecipe(null);
         }
       } catch (error) {
@@ -43,6 +43,7 @@ const RecipeDetails = () => {
         setLoading(false);
       }
     };
+    
   
     fetchRecipe();
   }, [id, baseUrl]);
